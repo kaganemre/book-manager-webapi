@@ -1,0 +1,21 @@
+using BookManager.Application.Interfaces;
+using BookManager.Domain.Entities;
+using Microsoft.EntityFrameworkCore;
+
+namespace BookManager.Infrastructure.Context;
+public class ApplicationDbContext : DbContext, IApplicationDbContext
+{
+    public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
+        : base(options)
+    {
+    }
+
+    public DbSet<Book> Books { get; set; }
+    public DbSet<Category> Categories { get; set; }
+
+    public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
+    {
+        return await base.SaveChangesAsync(cancellationToken);
+    }
+
+}

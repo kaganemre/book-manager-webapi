@@ -4,7 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 namespace BookManager.Application;
 public static class ApplicationServiceRegistration
 {
-    public static IServiceCollection AddApplicationServices(this IServiceCollection services)
+    public static IServiceCollection AddApplication(this IServiceCollection services)
     {
         services.AddFastEndpoints();
 
