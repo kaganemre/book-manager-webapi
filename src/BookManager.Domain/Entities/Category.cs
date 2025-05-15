@@ -1,8 +1,8 @@
-using BookManager.Domain.Common;
-
 namespace BookManager.Domain.Entities;
-public sealed class Category : BaseEntity
+
+public sealed class Category
 {
+    public int Id { get; set; }
     public string Name { get; set; } = default!;
     public string? Description { get; set; }
 

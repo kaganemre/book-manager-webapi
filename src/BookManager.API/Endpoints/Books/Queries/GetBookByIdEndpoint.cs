@@ -15,7 +15,7 @@ public class GetBookByIdEndpoint : Endpoint<GetBookByIdRequest, Result<GetBookBy
     }
     public override void Configure()
     {
-        Get("/api/book/{id}");
+        Get("/api/book/{id:guid}");
         AllowAnonymous();
     }
 
