@@ -2,6 +2,7 @@ using FastEndpoints;
 using FluentValidation;
 
 namespace BookManager.Application.Features.Books.Queries;
+
 public sealed record GetBookByIdRequest(Guid Id);
 public sealed class GetBookByIdRequestValidator : Validator<GetBookByIdRequest>
 {
@@ -19,7 +20,7 @@ public sealed class GetBookByIdResponse
     public string? Description { get; set; }
     public string ISBN { get; set; } = default!;
     public int? PageCount { get; set; }
-    public DateTimeOffset PublishedDate { get; set; } = default!;
+    public DateOnly PublishedDate { get; set; } = default!;
     public int StockQuantity { get; set; }
     public string Source { get; set; } = default!;
     public int CategoryId { get; set; }

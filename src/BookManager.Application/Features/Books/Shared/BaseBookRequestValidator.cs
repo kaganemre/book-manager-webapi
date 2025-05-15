@@ -36,7 +36,7 @@ public abstract class BaseBookRequestValidator<T> : Validator<T>
             .WithMessage("Sayfa sayısı sıfırdan büyük olmalıdır.");
 
         RuleFor(x => x.PublishedDate)
-            .LessThanOrEqualTo(DateTimeOffset.UtcNow)
+            .LessThanOrEqualTo(DateOnly.FromDateTime(DateTime.UtcNow))
             .WithMessage("Yayın tarihi bugünden ileri bir tarih olamaz.");
 
         RuleFor(x => x.StockQuantity)
