@@ -4,7 +4,7 @@ using FluentResults;
 
 namespace BookManager.API.Endpoints.Books.Queries;
 
-public class GetBookByIdEndpoint : Endpoint<GetBookByIdRequest, Result<GetBookByIdResponse>>
+public class GetBookByIdEndpoint : Endpoint<GetBookByIdQueryRequest, Result<GetBookByIdQueryResponse>>
 {
     private readonly GetBookByIdQueryHandler _handler;
     public GetBookByIdEndpoint(GetBookByIdQueryHandler handler)
@@ -17,7 +17,7 @@ public class GetBookByIdEndpoint : Endpoint<GetBookByIdRequest, Result<GetBookBy
         AllowAnonymous();
     }
 
-    public override async Task HandleAsync(GetBookByIdRequest req, CancellationToken ct)
+    public override async Task HandleAsync(GetBookByIdQueryRequest req, CancellationToken ct)
     {
         var result = await _handler.HandleAsync(req, ct);
 

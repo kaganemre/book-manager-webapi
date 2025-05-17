@@ -6,10 +6,10 @@ using Mapster;
 
 namespace BookManager.Application.Features.Books.Queries;
 
-public sealed record GetBookByIdRequest(Guid Id);
-public sealed class GetBookByIdRequestValidator : Validator<GetBookByIdRequest>
+public sealed record GetBookByIdQueryRequest(Guid Id);
+public sealed class GetBookByIdQueryValidator : Validator<GetBookByIdQueryRequest>
 {
-    public GetBookByIdRequestValidator()
+    public GetBookByIdQueryValidator()
     {
         RuleFor(x => x.Id)
             .NotEqual(Guid.Empty)
@@ -24,7 +24,7 @@ public sealed class GetBookByIdQueryHandler
         _unitOfWork = unitOfWork;
     }
 
-    public async Task<Result<GetBookByIdResponse>> HandleAsync(GetBookByIdRequest req, CancellationToken ct)
+    public async Task<Result<GetBookByIdQueryResponse>> HandleAsync(GetBookByIdQueryRequest req, CancellationToken ct)
     {
         var book = await _unitOfWork.BookRepository.GetByIdAsync(req.Id, ct);
 
@@ -33,10 +33,10 @@ public sealed class GetBookByIdQueryHandler
             return Result.Fail("Kitap bulunamadı");
         }
 
-        return book.Adapt<GetBookByIdResponse>();
+        return book.Adapt<GetBookByIdQueryResponse>();
     }
 }
-public sealed class GetBookByIdResponse
+public sealed class GetBookByIdQueryResponse
 {
     public string Title { get; set; } = default!;
     public string Author { get; set; } = default!;

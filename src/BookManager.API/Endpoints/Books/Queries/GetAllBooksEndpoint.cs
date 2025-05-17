@@ -3,7 +3,7 @@ using FastEndpoints;
 
 namespace BookManager.API.Endpoints.Books.Queries;
 
-public class GetAllBooksEndpoint : EndpointWithoutRequest<IReadOnlyList<GetAllBooksResponse>>
+public class GetAllBooksEndpoint : EndpointWithoutRequest<IReadOnlyList<GetAllBooksQueryResponse>>
 {
     private readonly GetAllBooksQueryHandler _handler;
     public GetAllBooksEndpoint(GetAllBooksQueryHandler handler)

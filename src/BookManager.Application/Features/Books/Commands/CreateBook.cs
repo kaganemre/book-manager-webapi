@@ -6,8 +6,8 @@ using Mapster;
 
 namespace BookManager.Application.Features.Books.Commands;
 
-public sealed record CreateBookRequest : BookRequestBase;
-public sealed class CreateBookRequestValidator : BaseBookRequestValidator<CreateBookRequest> { }
+public sealed record CreateBookCommandRequest : BookRequestBase;
+public sealed class CreateBookCommandRequestValidator : BaseBookRequestValidator<CreateBookCommandRequest> { }
 public sealed class CreateBookCommandHandler
 {
     private readonly IUnitOfWork _unitOfWork;
@@ -16,7 +16,7 @@ public sealed class CreateBookCommandHandler
         _unitOfWork = unitOfWork;
     }
 
-    public async Task<Result<CreateBookResponse>> HandleAsync(CreateBookRequest req, CancellationToken ct)
+    public async Task<Result<CreateBookResponse>> HandleAsync(CreateBookCommandRequest req, CancellationToken ct)
     {
         var exists = await _unitOfWork.BookRepository.AnyAsync(b => b.ISBN == req.ISBN);
         if (exists)

@@ -4,7 +4,6 @@ using Microsoft.EntityFrameworkCore;
 
 namespace BookManager.Application.Features.Books.Queries;
 
-// public sealed record GetAllBooksRequest();
 public sealed class GetAllBooksQueryHandler
 {
     private readonly IUnitOfWork _unitOfWork;
@@ -13,16 +12,14 @@ public sealed class GetAllBooksQueryHandler
         _unitOfWork = unitOfWork;
     }
 
-    public async Task<IReadOnlyList<GetAllBooksResponse>> HandleAsync(CancellationToken ct)
+    public async Task<IReadOnlyList<GetAllBooksQueryResponse>> HandleAsync(CancellationToken ct)
     {
-        var books = await _unitOfWork.BookRepository.GetAll()
-                            .AsNoTracking()
-                            .ToListAsync(ct);
+        var books = await _unitOfWork.BookRepository.GetAll().ToListAsync(ct);
 
-        return books.Adapt<IReadOnlyList<GetAllBooksResponse>>();
+        return books.Adapt<IReadOnlyList<GetAllBooksQueryResponse>>();
     }
 }
-public sealed class GetAllBooksResponse
+public sealed class GetAllBooksQueryResponse
 {
     public Guid Id { get; set; }
     public string Title { get; set; } = default!;
