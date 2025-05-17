@@ -1,5 +1,8 @@
+using BookManager.Application.Interfaces;
 using FastEndpoints;
+using FluentResults;
 using FluentValidation;
+using Mapster;
 
 namespace BookManager.Application.Features.Books.Queries;
 
@@ -11,6 +14,26 @@ public sealed class GetBookByIdRequestValidator : Validator<GetBookByIdRequest>
         RuleFor(x => x.Id)
             .NotEqual(Guid.Empty)
             .WithMessage("Geçerli bir kitap kimliği belirtilmelidir.");
+    }
+}
+public sealed class GetBookByIdQueryHandler
+{
+    private readonly IUnitOfWork _unitOfWork;
+    public GetBookByIdQueryHandler(IUnitOfWork unitOfWork)
+    {
+        _unitOfWork = unitOfWork;
+    }
+
+    public async Task<Result<GetBookByIdResponse>> HandleAsync(GetBookByIdRequest req, CancellationToken ct)
+    {
+        var book = await _unitOfWork.BookRepository.GetByIdAsync(req.Id, ct);
+
+        if (book is null)
+        {
+            return Result.Fail("Kitap bulunamadı");
+        }
+
+        return book.Adapt<GetBookByIdResponse>();
     }
 }
 public sealed class GetBookByIdResponse

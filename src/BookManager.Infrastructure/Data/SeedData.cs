@@ -31,7 +31,7 @@ public static class SeedData
                 Source = "Prentice Hall",
                 PageCount = 464,
                 Description = "Temiz ve sürdürülebilir kod yazma tekniklerini anlatan, yazılım geliştiriciler için temel bir rehber.",
-                Category = categories.First(c => c.Name == "Yazılım Geliştirme")
+                CategoryId = categories.First(c => c.Name == "Yazılım Geliştirme").Id
             },
             new()
             {
@@ -43,7 +43,7 @@ public static class SeedData
                 Source = "Addison-Wesley",
                 PageCount = 352,
                 Description = "Yazılım geliştiriciler için pragmatik yaklaşımlar sunan, meslek hayatına yön verebilecek kapsamlı bir kaynak.",
-                Category = categories.First(c => c.Name == "Yazılım Geliştirme")
+                CategoryId = categories.First(c => c.Name == "Yazılım Geliştirme").Id
             },
             new()
             {
@@ -55,7 +55,7 @@ public static class SeedData
                 Source = "Pearson",
                 PageCount = 432,
                 Description = "Yazılım mimarisi konusunda modern ve sürdürülebilir tasarım ilkelerini ele alan detaylı bir kitap.",
-                Category = categories.First(c => c.Name == "Yazılım Geliştirme")
+                CategoryId = categories.First(c => c.Name == "Yazılım Geliştirme").Id
             },
             new()
             {
@@ -67,7 +67,7 @@ public static class SeedData
                 Source = "Addison-Wesley",
                 PageCount = 418,
                 Description = "Mevcut kodun performansını ve okunabilirliğini artırma tekniklerini anlatan yazılım geliştirme kitabı.",
-                Category = categories.First(c => c.Name == "Yazılım Geliştirme")
+                CategoryId = categories.First(c => c.Name == "Yazılım Geliştirme").Id
             },
             new()
             {
@@ -79,7 +79,7 @@ public static class SeedData
                 Source = "ALA Editions",
                 PageCount = 648,
                 Description = "Kütüphane bilimi ve bilgi yönetimi üzerine temel prensipleri ve uygulamaları kapsayan akademik bir kaynak.",
-                Category = categories.First(c => c.Name == "Kütüphanecilik")
+                CategoryId = categories.First(c => c.Name == "Kütüphanecilik").Id
             },
             new()
             {
@@ -91,7 +91,7 @@ public static class SeedData
                 Source = "İstanbul Üniversitesi Yayınları",
                 PageCount = 340,
                 Description = "Kitap ve kütüphanelerin tarihi üzerine kapsamlı bir çalışma, geçmişten günümüze gelişim sürecini anlatıyor.",
-                Category = categories.First(c => c.Name == "Kütüphanecilik")
+                CategoryId = categories.First(c => c.Name == "Kütüphanecilik").Id
             },
             new()
             {
@@ -103,7 +103,7 @@ public static class SeedData
                 Source = "Kültür ve Tarih Kitapları",
                 PageCount = 280,
                 Description = "Arşivcilik alanında kullanılan temel terimleri ve açıklamalarını içeren kapsamlı bir sözlük.",
-                Category = categories.First(c => c.Name == "Arşivcilik")
+                CategoryId = categories.First(c => c.Name == "Arşivcilik").Id
             }
         };
 

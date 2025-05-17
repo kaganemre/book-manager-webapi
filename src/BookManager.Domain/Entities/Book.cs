@@ -13,5 +13,6 @@ public sealed class Book : BaseEntity
     public int StockQuantity { get; set; }
     public string Source { get; set; } = default!;
 
+    public int CategoryId { get; set; }
     public Category Category { get; set; } = default!;
 }

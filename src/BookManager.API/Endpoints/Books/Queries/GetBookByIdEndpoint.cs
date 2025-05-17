@@ -1,17 +1,15 @@
 using BookManager.Application.Features.Books.Queries;
-using BookManager.Application.Interfaces;
 using FastEndpoints;
 using FluentResults;
-using Mapster;
 
 namespace BookManager.API.Endpoints.Books.Queries;
 
 public class GetBookByIdEndpoint : Endpoint<GetBookByIdRequest, Result<GetBookByIdResponse>>
 {
-    private readonly IUnitOfWork _unitOfWork;
-    public GetBookByIdEndpoint(IUnitOfWork unitOfWork)
+    private readonly GetBookByIdQueryHandler _handler;
+    public GetBookByIdEndpoint(GetBookByIdQueryHandler handler)
     {
-        _unitOfWork = unitOfWork;
+        _handler = handler;
     }
     public override void Configure()
     {
@@ -21,16 +19,14 @@ public class GetBookByIdEndpoint : Endpoint<GetBookByIdRequest, Result<GetBookBy
 
     public override async Task HandleAsync(GetBookByIdRequest req, CancellationToken ct)
     {
-        var book = await _unitOfWork.BookRepository.GetByIdAsync(req.Id, ct);
+        var result = await _handler.HandleAsync(req, ct);
 
-        if (book is null)
+        if (result.IsFailed)
         {
-            await SendAsync(Result.Fail("Kitap bulunamadı"), 404, ct);
+            await SendAsync(result, 404, ct);
             return;
         }
 
-        var bookDto = book.Adapt<GetBookByIdResponse>();
-
-        await SendAsync(Result.Ok(bookDto), 200, ct);
+        await SendAsync(result, 200, ct);
     }
 }

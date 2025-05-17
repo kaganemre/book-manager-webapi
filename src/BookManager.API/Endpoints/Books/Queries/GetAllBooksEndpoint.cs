@@ -1,17 +1,14 @@
 using BookManager.Application.Features.Books.Queries;
-using BookManager.Application.Interfaces;
 using FastEndpoints;
-using Mapster;
-using Microsoft.EntityFrameworkCore;
 
 namespace BookManager.API.Endpoints.Books.Queries;
 
 public class GetAllBooksEndpoint : EndpointWithoutRequest<IReadOnlyList<GetAllBooksResponse>>
 {
-    private readonly IUnitOfWork _unitOfWork;
-    public GetAllBooksEndpoint(IUnitOfWork unitOfWork)
+    private readonly GetAllBooksQueryHandler _handler;
+    public GetAllBooksEndpoint(GetAllBooksQueryHandler handler)
     {
-        _unitOfWork = unitOfWork;
+        _handler = handler;
     }
     public override void Configure()
     {
@@ -20,9 +17,7 @@ public class GetAllBooksEndpoint : EndpointWithoutRequest<IReadOnlyList<GetAllBo
     }
     public override async Task HandleAsync(CancellationToken ct)
     {
-        var books = await _unitOfWork.BookRepository.GetAll().ToListAsync(ct);
-        var booksDto = books.Adapt<IReadOnlyList<GetAllBooksResponse>>();
-
-        await SendAsync(booksDto, cancellation: ct);
+        var result = await _handler.HandleAsync(ct);
+        await SendAsync(result, cancellation: ct);
     }
 }
