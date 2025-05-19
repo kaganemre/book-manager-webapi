@@ -1,10 +1,8 @@
 using BookManager.API.Middleware;
 using BookManager.Application;
 using BookManager.Infrastructure;
-using BookManager.Infrastructure.Context;
 using BookManager.Infrastructure.Data;
 using FastEndpoints;
-using Microsoft.EntityFrameworkCore;
 using Scalar.AspNetCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -22,6 +20,8 @@ builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 
 var app = builder.Build();
 
+DependencyInjection.ApplyMigrations(app.Services);
+
 app.MapScalarApiReference();
 
 // Configure the HTTP request pipeline.
@@ -33,20 +33,13 @@ if (app.Environment.IsDevelopment())
 app.UseExceptionHandler();
 app.UseStatusCodePages();
 
+app.UseAuthentication();
+app.UseAuthorization();
+
 app.UseFastEndpoints();
 
-using var scope = app.Services.CreateScope();
-var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
 
-var pendingMigrations = await dbContext.Database.GetPendingMigrationsAsync();
-
-if (pendingMigrations.Any())
-{
-    Console.WriteLine($"Applying {pendingMigrations.Count()} pending migrations...");
-    await dbContext.Database.MigrateAsync();
-}
-
-await SeedData.SeedAsync(dbContext);
+await SeedData.SeedAsync(app.Services);
 
 app.Run();
 

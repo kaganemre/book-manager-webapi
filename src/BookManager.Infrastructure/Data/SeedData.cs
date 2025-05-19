@@ -1,14 +1,18 @@
 using BookManager.Domain.Entities;
 using BookManager.Infrastructure.Context;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace BookManager.Infrastructure.Data;
 
 public static class SeedData
 {
-    public static async Task SeedAsync(ApplicationDbContext context)
+    public static async Task SeedAsync(IServiceProvider serviceProvider)
     {
-        if (context.Books.Any()) return;
+        var context = serviceProvider.CreateScope()
+                       .ServiceProvider.GetRequiredService<ApplicationDbContext>();
 
+        if (context.Books.Any()) return;
         var categories = new List<Category>
         {
             new() { Name = "Yazılım Geliştirme" },
@@ -111,6 +115,36 @@ public static class SeedData
         context.Books.AddRange(books);
         await context.SaveChangesAsync();
 
-    }
+        if (!context.Users.Any())
+        {
 
+            var userManager = serviceProvider.CreateScope().ServiceProvider.GetRequiredService<UserManager<AppUser>>();
+            var roleManager = serviceProvider.CreateScope().ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
+
+            await roleManager.CreateAsync(new IdentityRole { Name = "Admin" });
+            await roleManager.CreateAsync(new IdentityRole { Name = "User" });
+
+            var adminUser = new AppUser
+            {
+                UserName = "admin",
+                Email = "admin@info.com",
+                FullName = "Admin User",
+                EmailConfirmed = true
+            };
+
+            var normalUser = new AppUser
+            {
+                UserName = "user",
+                Email = "user@info.com",
+                FullName = "Normal User",
+                EmailConfirmed = true
+            };
+
+            await userManager.CreateAsync(adminUser, "Admin123!");
+            await userManager.CreateAsync(normalUser, "User123!");
+
+            await userManager.AddToRoleAsync(adminUser, "Admin");
+            await userManager.AddToRoleAsync(normalUser, "User");
+        }
+    }
 }
