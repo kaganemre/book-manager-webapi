@@ -14,7 +14,6 @@ public sealed class DeleteBookCommandRequestValidator : Validator<DeleteBookComm
             .WithMessage("Geçerli bir kitap kimliği belirtilmelidir.");
     }
 }
-
 public sealed class DeleteBookCommandHandler
 {
     private readonly IUnitOfWork _unitOfWork;
@@ -22,11 +21,10 @@ public sealed class DeleteBookCommandHandler
     {
         _unitOfWork = unitOfWork;
     }
-
     public async Task HandleAsync(DeleteBookCommandRequest req, CancellationToken ct)
     {
         var book = await _unitOfWork.BookRepository.GetByIdAsync(req.Id, ct)
-                    ?? throw new KeyNotFoundException("Kitap bulunamadı!");
+                    ?? throw new KeyNotFoundException("Kitap bulunamadı");
 
         _unitOfWork.BookRepository.Remove(book);
         await _unitOfWork.SaveChangesAsync(ct);

@@ -1,3 +1,4 @@
+using BookManager.Application.Common.Exceptions;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -16,6 +17,7 @@ public class GlobalExceptionHandler(
             InvalidOperationException => StatusCodes.Status400BadRequest,
             KeyNotFoundException => StatusCodes.Status404NotFound,
             UnauthorizedAccessException => StatusCodes.Status401Unauthorized,
+            ConflictException => StatusCodes.Status409Conflict,
             DbUpdateException => StatusCodes.Status500InternalServerError,
             _ => StatusCodes.Status500InternalServerError,
         };

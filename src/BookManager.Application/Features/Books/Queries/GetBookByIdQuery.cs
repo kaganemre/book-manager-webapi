@@ -22,10 +22,10 @@ public sealed class GetBookByIdQueryHandler
     {
         _unitOfWork = unitOfWork;
     }
-
     public async Task<GetBookByIdQueryResponse> HandleAsync(GetBookByIdQueryRequest req, CancellationToken ct)
     {
-        var book = await _unitOfWork.BookRepository.GetByIdAsync(req.Id, ct);
+        var book = await _unitOfWork.BookRepository.GetByIdAsync(req.Id, ct)
+                    ?? throw new KeyNotFoundException("Kitap bulunamadı");
 
         return book.Adapt<GetBookByIdQueryResponse>();
     }

@@ -9,5 +9,5 @@ public interface IRepository<TEntity> where TEntity : class
     void Add(TEntity entity);
     void Update(TEntity entity);
     void Remove(TEntity entity);
-    Task<bool> AnyAsync(Expression<Func<TEntity, bool>> predicate);
+    Task<bool> AnyAsync(Expression<Func<TEntity, bool>> predicate, CancellationToken cancellationToken = default);
 }

@@ -18,6 +18,6 @@ public class GetAllBooksEndpoint : EndpointWithoutRequest<IReadOnlyList<GetAllBo
     public override async Task HandleAsync(CancellationToken ct)
     {
         var result = await _handler.HandleAsync(ct);
-        await SendAsync(result, cancellation: ct);
+        await SendOkAsync(result, ct);
     }
 }

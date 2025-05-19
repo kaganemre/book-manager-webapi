@@ -23,8 +23,8 @@ public class Repository<TEntity> : IRepository<TEntity> where TEntity : class
     public void Add(TEntity entity) => _dbSet.Add(entity);
     public void Update(TEntity entity) => _dbSet.Update(entity);
     public void Remove(TEntity entity) => _dbSet.Remove(entity);
-    public async Task<bool> AnyAsync(Expression<Func<TEntity, bool>> predicate)
+    public async Task<bool> AnyAsync(Expression<Func<TEntity, bool>> predicate, CancellationToken cancellationToken = default)
     {
-        return await _context.Set<TEntity>().AnyAsync(predicate);
+        return await _context.Set<TEntity>().AnyAsync(predicate, cancellationToken);
     }
 }

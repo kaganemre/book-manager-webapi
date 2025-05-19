@@ -15,16 +15,9 @@ public class GetBookByIdEndpoint : Endpoint<GetBookByIdQueryRequest, GetBookById
         Get("/api/book/{id}");
         AllowAnonymous();
     }
-
     public override async Task HandleAsync(GetBookByIdQueryRequest req, CancellationToken ct)
     {
         var result = await _handler.HandleAsync(req, ct);
-
-        if (result is null)
-        {
-            ThrowError("Kitap bulunamadı.", 404);
-        }
-
-        await SendAsync(result, 200, ct);
+        await SendOkAsync(result, ct);
     }
 }

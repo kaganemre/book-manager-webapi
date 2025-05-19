@@ -11,11 +11,9 @@ public sealed class GetAllBooksQueryHandler
     {
         _unitOfWork = unitOfWork;
     }
-
     public async Task<IReadOnlyList<GetAllBooksQueryResponse>> HandleAsync(CancellationToken ct)
     {
         var books = await _unitOfWork.BookRepository.GetAll().ToListAsync(ct);
-
         return books.Adapt<IReadOnlyList<GetAllBooksQueryResponse>>();
     }
 }

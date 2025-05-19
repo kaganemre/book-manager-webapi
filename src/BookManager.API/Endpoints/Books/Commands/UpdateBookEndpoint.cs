@@ -15,17 +15,9 @@ public class UpdateBookEndpoint : Endpoint<UpdateBookCommandRequest, bool>
         Put("/api/books/{id}");
         AllowAnonymous();
     }
-
     public override async Task HandleAsync(UpdateBookCommandRequest req, CancellationToken ct)
     {
-        var result = await _handler.HandleAsync(req, ct);
-
-        if (result.IsFailed)
-        {
-            await SendAsync(false, 404, ct);
-            return;
-        }
-
-        await SendAsync(true, 200, ct);
+        await _handler.HandleAsync(req, ct);
+        await SendNoContentAsync(ct);
     }
 }
