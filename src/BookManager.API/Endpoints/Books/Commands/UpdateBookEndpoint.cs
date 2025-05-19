@@ -12,7 +12,7 @@ public class UpdateBookEndpoint : Endpoint<UpdateBookCommandRequest, bool>
     }
     public override void Configure()
     {
-        Post("/api/books");
+        Put("/api/books/{id}");
         AllowAnonymous();
     }
 

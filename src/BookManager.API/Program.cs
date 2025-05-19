@@ -1,3 +1,4 @@
+using BookManager.API.Middleware;
 using BookManager.Application;
 using BookManager.Infrastructure;
 using BookManager.Infrastructure.Context;
@@ -16,6 +17,9 @@ builder.Services.AddOpenApi();
 builder.Services.AddApplication();
 builder.Services.AddInfrastructure(builder.Configuration);
 
+builder.Services.AddProblemDetails();
+builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
+
 var app = builder.Build();
 
 app.MapScalarApiReference();
@@ -25,6 +29,9 @@ if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
 }
+
+app.UseExceptionHandler();
+app.UseStatusCodePages();
 
 app.UseFastEndpoints();
 

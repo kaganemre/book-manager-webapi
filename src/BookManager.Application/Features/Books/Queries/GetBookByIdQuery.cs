@@ -1,6 +1,5 @@
 using BookManager.Application.Interfaces;
 using FastEndpoints;
-using FluentResults;
 using FluentValidation;
 using Mapster;
 
@@ -24,20 +23,16 @@ public sealed class GetBookByIdQueryHandler
         _unitOfWork = unitOfWork;
     }
 
-    public async Task<Result<GetBookByIdQueryResponse>> HandleAsync(GetBookByIdQueryRequest req, CancellationToken ct)
+    public async Task<GetBookByIdQueryResponse> HandleAsync(GetBookByIdQueryRequest req, CancellationToken ct)
     {
         var book = await _unitOfWork.BookRepository.GetByIdAsync(req.Id, ct);
-
-        if (book is null)
-        {
-            return Result.Fail("Kitap bulunamadı");
-        }
 
         return book.Adapt<GetBookByIdQueryResponse>();
     }
 }
 public sealed class GetBookByIdQueryResponse
 {
+    public Guid Id { get; set; }
     public string Title { get; set; } = default!;
     public string Author { get; set; } = default!;
     public string? Description { get; set; }

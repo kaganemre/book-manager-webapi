@@ -1,10 +1,9 @@
 using BookManager.Application.Features.Books.Queries;
 using FastEndpoints;
-using FluentResults;
 
 namespace BookManager.API.Endpoints.Books.Queries;
 
-public class GetBookByIdEndpoint : Endpoint<GetBookByIdQueryRequest, Result<GetBookByIdQueryResponse>>
+public class GetBookByIdEndpoint : Endpoint<GetBookByIdQueryRequest, GetBookByIdQueryResponse>
 {
     private readonly GetBookByIdQueryHandler _handler;
     public GetBookByIdEndpoint(GetBookByIdQueryHandler handler)
@@ -13,7 +12,7 @@ public class GetBookByIdEndpoint : Endpoint<GetBookByIdQueryRequest, Result<GetB
     }
     public override void Configure()
     {
-        Get("/api/book/{id:guid}");
+        Get("/api/book/{id}");
         AllowAnonymous();
     }
 
@@ -21,10 +20,9 @@ public class GetBookByIdEndpoint : Endpoint<GetBookByIdQueryRequest, Result<GetB
     {
         var result = await _handler.HandleAsync(req, ct);
 
-        if (result.IsFailed)
+        if (result is null)
         {
-            await SendAsync(result, 404, ct);
-            return;
+            ThrowError("Kitap bulunamadı.", 404);
         }
 
         await SendAsync(result, 200, ct);

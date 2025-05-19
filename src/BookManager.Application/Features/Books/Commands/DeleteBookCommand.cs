@@ -1,6 +1,5 @@
 using BookManager.Application.Interfaces;
 using FastEndpoints;
-using FluentResults;
 using FluentValidation;
 
 namespace BookManager.Application.Features.Books.Commands;
@@ -24,16 +23,12 @@ public sealed class DeleteBookCommandHandler
         _unitOfWork = unitOfWork;
     }
 
-    public async Task<Result<bool>> HandleAsync(DeleteBookCommandRequest req, CancellationToken ct)
+    public async Task HandleAsync(DeleteBookCommandRequest req, CancellationToken ct)
     {
-        var book = await _unitOfWork.BookRepository.GetByIdAsync(req.Id, ct);
-
-        if (book is null)
-            return Result.Fail("Kitap bulunamadı");
+        var book = await _unitOfWork.BookRepository.GetByIdAsync(req.Id, ct)
+                    ?? throw new KeyNotFoundException("Kitap bulunamadı!");
 
         _unitOfWork.BookRepository.Remove(book);
         await _unitOfWork.SaveChangesAsync(ct);
-
-        return Result.Ok();
     }
 }

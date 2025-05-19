@@ -12,19 +12,13 @@ public class DeleteBookEndpoint : Endpoint<DeleteBookCommandRequest, bool>
     }
     public override void Configure()
     {
-        Post("/api/books");
+        Delete("/api/books/{id}");
         AllowAnonymous();
     }
 
     public override async Task HandleAsync(DeleteBookCommandRequest req, CancellationToken ct)
     {
-        var result = await _handler.HandleAsync(req, ct);
-
-        if (result.IsFailed)
-        {
-            await SendAsync(false, 404, ct);
-        }
-
-        await SendAsync(true, 204, ct);
+        await _handler.HandleAsync(req, ct);
+        await SendNoContentAsync(ct);
     }
 }

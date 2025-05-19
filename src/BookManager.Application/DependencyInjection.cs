@@ -12,6 +12,8 @@ public static class ApplicationServiceRegistration
         services.AddScoped<GetAllBooksQueryHandler>();
         services.AddScoped<GetBookByIdQueryHandler>();
         services.AddScoped<CreateBookCommandHandler>();
+        services.AddScoped<UpdateBookCommandHandler>();
+        services.AddScoped<DeleteBookCommandHandler>();
 
         services.AddFastEndpoints();
 
