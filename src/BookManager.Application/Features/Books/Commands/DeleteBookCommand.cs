@@ -23,10 +23,9 @@ public sealed class DeleteBookCommandHandler
     }
     public async Task HandleAsync(DeleteBookCommandRequest req, CancellationToken ct)
     {
-        var book = await _unitOfWork.BookRepository.GetByIdAsync(req.Id, ct)
-                    ?? throw new KeyNotFoundException("Kitap bulunamadı");
+        var book = await _unitOfWork.BookRepository.GetByIdAsync(req.Id, ct);
 
-        _unitOfWork.BookRepository.Remove(book);
+        _unitOfWork.BookRepository.Remove(book!);
         await _unitOfWork.SaveChangesAsync(ct);
     }
 }

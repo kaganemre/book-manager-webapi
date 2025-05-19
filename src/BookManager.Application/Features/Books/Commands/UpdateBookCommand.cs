@@ -26,11 +26,10 @@ public sealed class UpdateBookCommandHandler
     }
     public async Task HandleAsync(UpdateBookCommandRequest req, CancellationToken ct)
     {
-        var book = await _unitOfWork.BookRepository.GetByIdAsync(req.Id, ct)
-                    ?? throw new KeyNotFoundException("Kitap bulunamadı");
+        var book = await _unitOfWork.BookRepository.GetByIdAsync(req.Id, ct);
 
         req.Adapt(book);
-        _unitOfWork.BookRepository.Update(book);
+        _unitOfWork.BookRepository.Update(book!);
         await _unitOfWork.SaveChangesAsync(ct);
     }
 }

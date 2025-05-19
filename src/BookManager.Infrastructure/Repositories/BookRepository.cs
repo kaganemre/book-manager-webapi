@@ -12,8 +12,8 @@ public class BookRepository : Repository<Book>, IBookRepository
     }
     public override async Task<Book?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
     {
-        return await _context.Books
-            .Include(b => b.Category)
-            .FirstOrDefaultAsync(b => b.Id == id, cancellationToken);
+        return await _context.Books.Include(b => b.Category)
+            .FirstOrDefaultAsync(b => b.Id == id, cancellationToken)
+            ?? throw new KeyNotFoundException("Kitap bulunamadı");
     }
 }
