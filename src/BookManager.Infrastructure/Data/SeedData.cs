@@ -118,25 +118,23 @@ public static class SeedData
         if (!context.Users.Any())
         {
 
-            var userManager = serviceProvider.CreateScope().ServiceProvider.GetRequiredService<UserManager<AppUser>>();
+            var userManager = serviceProvider.CreateScope().ServiceProvider.GetRequiredService<UserManager<IdentityUser>>();
             var roleManager = serviceProvider.CreateScope().ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
 
             await roleManager.CreateAsync(new IdentityRole { Name = "Admin" });
             await roleManager.CreateAsync(new IdentityRole { Name = "User" });
 
-            var adminUser = new AppUser
+            var adminUser = new IdentityUser
             {
                 UserName = "admin",
                 Email = "admin@info.com",
-                FullName = "Admin User",
                 EmailConfirmed = true
             };
 
-            var normalUser = new AppUser
+            var normalUser = new IdentityUser
             {
                 UserName = "user",
                 Email = "user@info.com",
-                FullName = "Normal User",
                 EmailConfirmed = true
             };
 

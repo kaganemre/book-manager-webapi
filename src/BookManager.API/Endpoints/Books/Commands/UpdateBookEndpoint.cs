@@ -12,8 +12,8 @@ public class UpdateBookEndpoint : Endpoint<UpdateBookCommandRequest, bool>
     }
     public override void Configure()
     {
-        Put("/api/books/{id}");
-        AllowAnonymous();
+        Put("/books/{id}");
+        Roles("Admin");
     }
     public override async Task HandleAsync(UpdateBookCommandRequest req, CancellationToken ct)
     {

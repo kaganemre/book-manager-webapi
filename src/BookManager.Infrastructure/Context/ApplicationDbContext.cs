@@ -1,11 +1,12 @@
 using BookManager.Application.Interfaces;
 using BookManager.Domain.Entities;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
 namespace BookManager.Infrastructure.Context;
 
-public class ApplicationDbContext : IdentityDbContext<AppUser>, IApplicationDbContext
+public class ApplicationDbContext : IdentityDbContext<IdentityUser>, IApplicationDbContext
 {
     public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
         : base(options)

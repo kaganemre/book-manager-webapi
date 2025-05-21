@@ -4,7 +4,7 @@ using FastEndpoints;
 
 namespace BookManager.API.Endpoints.Books.Commands;
 
-public class CreateBookEndpoint : Endpoint<CreateBookCommandRequest, CreateBookResponse>
+public class CreateBookEndpoint : Endpoint<CreateBookCommandRequest, CreateBookCommandResponse>
 {
     private readonly CreateBookCommandHandler _handler;
     public CreateBookEndpoint(CreateBookCommandHandler handler)
@@ -13,8 +13,8 @@ public class CreateBookEndpoint : Endpoint<CreateBookCommandRequest, CreateBookR
     }
     public override void Configure()
     {
-        Post("/api/books");
-        AllowAnonymous();
+        Post("/books");
+        Roles("Admin");
     }
     public override async Task HandleAsync(CreateBookCommandRequest req, CancellationToken ct)
     {

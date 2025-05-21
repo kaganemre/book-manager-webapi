@@ -12,8 +12,8 @@ public class DeleteBookEndpoint : Endpoint<DeleteBookCommandRequest, bool>
     }
     public override void Configure()
     {
-        Delete("/api/books/{id}");
-        AllowAnonymous();
+        Delete("/books/{id}");
+        Roles("Admin");
     }
     public override async Task HandleAsync(DeleteBookCommandRequest req, CancellationToken ct)
     {

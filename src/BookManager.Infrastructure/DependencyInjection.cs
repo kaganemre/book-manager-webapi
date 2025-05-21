@@ -1,7 +1,8 @@
+using BookManager.Application.Common.Services;
 using BookManager.Application.Interfaces;
-using BookManager.Domain.Entities;
 using BookManager.Infrastructure.Context;
 using BookManager.Infrastructure.Repositories;
+using BookManager.Infrastructure.Security;
 using BookManager.Infrastructure.UoW;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -21,12 +22,12 @@ public static class DependencyInjection
         services.AddScoped<IBookRepository, BookRepository>();
         services.AddScoped<ICategoryRepository, CategoryRepository>();
         services.AddScoped<IUnitOfWork, UnitOfWork>();
+        services.AddScoped<IJwtTokenService, JwtTokenService>();
 
-        services.AddIdentity<AppUser, IdentityRole>()
+        services.AddIdentity<IdentityUser, IdentityRole>()
             .AddEntityFrameworkStores<ApplicationDbContext>()
             .AddDefaultTokenProviders();
 
-        services.AddAuthentication();
         services.AddAuthorization();
 
         return services;

@@ -12,8 +12,8 @@ public class GetBookByIdEndpoint : Endpoint<GetBookByIdQueryRequest, GetBookById
     }
     public override void Configure()
     {
-        Get("/api/book/{id}");
-        AllowAnonymous();
+        Get("/book/{id}");
+        Roles("User");
     }
     public override async Task HandleAsync(GetBookByIdQueryRequest req, CancellationToken ct)
     {

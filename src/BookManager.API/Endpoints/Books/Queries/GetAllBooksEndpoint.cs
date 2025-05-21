@@ -12,8 +12,8 @@ public class GetAllBooksEndpoint : EndpointWithoutRequest<IReadOnlyList<GetAllBo
     }
     public override void Configure()
     {
-        Get("/api/books");
-        AllowAnonymous();
+        Get("/books");
+        Roles("Admin", "User");
     }
     public override async Task HandleAsync(CancellationToken ct)
     {

@@ -15,7 +15,7 @@ public sealed class CreateBookCommandHandler
     {
         _unitOfWork = unitOfWork;
     }
-    public async Task<CreateBookResponse> HandleAsync(CreateBookCommandRequest req, CancellationToken ct)
+    public async Task<CreateBookCommandResponse> HandleAsync(CreateBookCommandRequest req, CancellationToken ct)
     {
         var exists = await _unitOfWork.BookRepository.AnyAsync(b => b.ISBN == req.ISBN, ct);
         if (exists)
@@ -25,10 +25,10 @@ public sealed class CreateBookCommandHandler
         _unitOfWork.BookRepository.Add(bookEntity);
         await _unitOfWork.SaveChangesAsync(ct);
 
-        return bookEntity.Adapt<CreateBookResponse>();
+        return bookEntity.Adapt<CreateBookCommandResponse>();
     }
 }
-public sealed class CreateBookResponse
+public sealed class CreateBookCommandResponse
 {
     public Guid Id { get; set; }
     public string Title { get; set; } = default!;
