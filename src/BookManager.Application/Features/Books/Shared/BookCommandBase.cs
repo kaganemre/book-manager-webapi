@@ -1,6 +1,6 @@
 namespace BookManager.Application.Features.Books.Shared;
 
-public abstract record BookRequestBase
+public abstract record BookCommandBase
 {
     public string Title { get; init; } = default!;
     public string Author { get; init; } = default!;

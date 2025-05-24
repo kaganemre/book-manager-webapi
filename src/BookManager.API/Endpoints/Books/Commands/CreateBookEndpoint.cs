@@ -1,28 +1,24 @@
 using BookManager.API.Endpoints.Books.Queries;
 using BookManager.Application.Features.Books.Commands;
+using Messaging = BookManager.Application.Interfaces.Messaging;
 using FastEndpoints;
 
 namespace BookManager.API.Endpoints.Books.Commands;
 
-public class CreateBookEndpoint : Endpoint<CreateBookCommandRequest, CreateBookCommandResponse>
+public class CreateBookEndpoint(Messaging.ICommandHandler<CreateBookCommand, CreateBookCommandResponse> handler) : Endpoint<CreateBookCommand, CreateBookCommandResponse>
 {
-    private readonly CreateBookCommandHandler _handler;
-    public CreateBookEndpoint(CreateBookCommandHandler handler)
-    {
-        _handler = handler;
-    }
     public override void Configure()
     {
         Post("/books");
         Roles("Admin");
     }
-    public override async Task HandleAsync(CreateBookCommandRequest req, CancellationToken ct)
+    public override async Task HandleAsync(CreateBookCommand req, CancellationToken ct)
     {
-        var result = await _handler.HandleAsync(req, ct);
+        var result = await handler.Handle(req, ct);
 
         await SendCreatedAtAsync<GetBookByIdEndpoint>(
-            new { id = result.Id },
-            result,
+            new { id = result.Value.Id },
+            result.Value,
             cancellation: ct
         );
     }

@@ -1,12 +1,11 @@
-using FastEndpoints;
 using FluentValidation;
 
 namespace BookManager.Application.Features.Books.Shared;
 
-public abstract class BaseBookRequestValidator<T> : Validator<T>
-    where T : BookRequestBase
+public abstract class BaseBookCommandValidator<T> : AbstractValidator<T>
+    where T : BookCommandBase
 {
-    protected BaseBookRequestValidator()
+    protected BaseBookCommandValidator()
     {
         RuleFor(x => x.Title)
             .NotEmpty()

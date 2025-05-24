@@ -1,31 +1,28 @@
-using BookManager.Application.Common.Exceptions;
 using BookManager.Application.Features.Books.Shared;
 using BookManager.Application.Interfaces;
+using BookManager.Application.Interfaces.Messaging;
 using BookManager.Domain.Entities;
+using FluentResults;
 using Mapster;
 
 namespace BookManager.Application.Features.Books.Commands;
 
-public sealed record CreateBookCommandRequest : BookRequestBase;
-public sealed class CreateBookCommandRequestValidator : BaseBookRequestValidator<CreateBookCommandRequest> { }
-public sealed class CreateBookCommandHandler
+public sealed record CreateBookCommand : BookCommandBase, ICommand<CreateBookCommandResponse>;
+public sealed class CreateBookCommandValidator : BaseBookCommandValidator<CreateBookCommand> { }
+internal sealed class CreateBookCommandHandler(IUnitOfWork unitOfWork) : ICommandHandler<CreateBookCommand, CreateBookCommandResponse>
 {
-    private readonly IUnitOfWork _unitOfWork;
-    public CreateBookCommandHandler(IUnitOfWork unitOfWork)
+    public async Task<Result<CreateBookCommandResponse>> Handle(CreateBookCommand command, CancellationToken cancellationToken)
     {
-        _unitOfWork = unitOfWork;
-    }
-    public async Task<CreateBookCommandResponse> HandleAsync(CreateBookCommandRequest req, CancellationToken ct)
-    {
-        var exists = await _unitOfWork.BookRepository.AnyAsync(b => b.ISBN == req.ISBN, ct);
+        var exists = await unitOfWork.BookRepository.AnyAsync(b => b.ISBN == command.ISBN, cancellationToken);
         if (exists)
-            throw new ConflictException("Aynı ISBN ile zaten bir kitap var.");
+            return Result.Fail("Aynı ISBN ile zaten bir kitap var.");
 
-        var bookEntity = req.Adapt<Book>();
-        _unitOfWork.BookRepository.Add(bookEntity);
-        await _unitOfWork.SaveChangesAsync(ct);
+        var bookEntity = command.Adapt<Book>();
+        unitOfWork.BookRepository.Add(bookEntity);
+        await unitOfWork.SaveChangesAsync(cancellationToken);
 
-        return bookEntity.Adapt<CreateBookCommandResponse>();
+        var response = bookEntity.Adapt<CreateBookCommandResponse>();
+        return Result.Ok(response);
     }
 }
 public sealed class CreateBookCommandResponse
