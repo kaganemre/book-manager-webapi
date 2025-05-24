@@ -5,16 +5,11 @@ using Microsoft.EntityFrameworkCore;
 
 namespace BookManager.Infrastructure.Repositories;
 
-public class Repository<TEntity> : IRepository<TEntity> where TEntity : class
+public class Repository<TEntity>(ApplicationDbContext context) : IRepository<TEntity> where TEntity : class
 {
-    protected readonly ApplicationDbContext _context;
-    private readonly DbSet<TEntity> _dbSet;
+    protected readonly ApplicationDbContext _context = context;
+    private readonly DbSet<TEntity> _dbSet = context.Set<TEntity>();
 
-    public Repository(ApplicationDbContext context)
-    {
-        _context = context;
-        _dbSet = context.Set<TEntity>();
-    }
     public IQueryable<TEntity> GetAll() => _dbSet.AsNoTracking();
     public virtual async Task<TEntity?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
     {

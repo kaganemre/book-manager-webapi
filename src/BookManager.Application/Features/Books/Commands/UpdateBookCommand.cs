@@ -1,35 +1,38 @@
 using BookManager.Application.Features.Books.Shared;
 using BookManager.Application.Interfaces;
+using BookManager.Application.Interfaces.Messaging;
+using FluentResults;
 using FluentValidation;
 using Mapster;
 
 namespace BookManager.Application.Features.Books.Commands;
 
-public sealed record UpdateBookCommandRequest(
-    Guid Id
-) : BookRequestBase;
-public sealed class UpdateBookCommandRequestValidator : BaseBookRequestValidator<UpdateBookCommandRequest>
+public sealed record UpdateBookCommand(Guid Id) : BookCommandBase, ICommand;
+public sealed class UpdateBookCommandValidator : BaseBookCommandValidator<UpdateBookCommand>
 {
-    public UpdateBookCommandRequestValidator()
+    public UpdateBookCommandValidator()
     {
         RuleFor(x => x.Id)
             .NotEqual(Guid.Empty)
             .WithMessage("Geçerli bir kitap kimliği belirtilmelidir.");
     }
 }
-public sealed class UpdateBookCommandHandler
+internal sealed class UpdateBookCommandHandler(IUnitOfWork unitOfWork)
+    : ICommandHandler<UpdateBookCommand>
 {
-    private readonly IUnitOfWork _unitOfWork;
-    public UpdateBookCommandHandler(IUnitOfWork unitOfWork)
+    public async Task<Result> Handle(UpdateBookCommand command, CancellationToken cancellationToken)
     {
-        _unitOfWork = unitOfWork;
-    }
-    public async Task HandleAsync(UpdateBookCommandRequest req, CancellationToken ct)
-    {
-        var book = await _unitOfWork.BookRepository.GetByIdAsync(req.Id, ct);
+        var book = await unitOfWork.BookRepository.GetByIdAsync(command.Id, cancellationToken);
 
-        req.Adapt(book);
-        _unitOfWork.BookRepository.Update(book!);
-        await _unitOfWork.SaveChangesAsync(ct);
+        if (book is null)
+        {
+            return Result.Fail("Kitap bulunamadı");
+        }
+
+        command.Adapt(book);
+        unitOfWork.BookRepository.Update(book);
+        await unitOfWork.SaveChangesAsync(cancellationToken);
+
+        return Result.Ok();
     }
 }

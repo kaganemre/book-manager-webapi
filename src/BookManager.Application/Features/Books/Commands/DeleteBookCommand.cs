@@ -1,31 +1,35 @@
 using BookManager.Application.Interfaces;
-using FastEndpoints;
+using BookManager.Application.Interfaces.Messaging;
+using FluentResults;
 using FluentValidation;
 
 namespace BookManager.Application.Features.Books.Commands;
 
-public sealed record DeleteBookCommandRequest(Guid Id);
-public sealed class DeleteBookCommandRequestValidator : Validator<DeleteBookCommandRequest>
+public sealed record DeleteBookCommand(Guid Id) : ICommand;
+public sealed class DeleteBookCommandValidator : AbstractValidator<DeleteBookCommand>
 {
-    public DeleteBookCommandRequestValidator()
+    public DeleteBookCommandValidator()
     {
         RuleFor(x => x.Id)
             .NotEqual(Guid.Empty)
             .WithMessage("Geçerli bir kitap kimliği belirtilmelidir.");
     }
 }
-public sealed class DeleteBookCommandHandler
+internal sealed class DeleteBookCommandHandler(IUnitOfWork unitOfWork)
+    : ICommandHandler<DeleteBookCommand>
 {
-    private readonly IUnitOfWork _unitOfWork;
-    public DeleteBookCommandHandler(IUnitOfWork unitOfWork)
+    public async Task<Result> Handle(DeleteBookCommand command, CancellationToken cancellationToken)
     {
-        _unitOfWork = unitOfWork;
-    }
-    public async Task HandleAsync(DeleteBookCommandRequest req, CancellationToken ct)
-    {
-        var book = await _unitOfWork.BookRepository.GetByIdAsync(req.Id, ct);
+        var book = await unitOfWork.BookRepository.GetByIdAsync(command.Id, cancellationToken);
 
-        _unitOfWork.BookRepository.Remove(book!);
-        await _unitOfWork.SaveChangesAsync(ct);
+        if (book is null)
+        {
+            return Result.Fail("Kitap bulunamadı");
+        }
+
+        unitOfWork.BookRepository.Remove(book);
+        await unitOfWork.SaveChangesAsync(cancellationToken);
+
+        return Result.Ok();
     }
 }

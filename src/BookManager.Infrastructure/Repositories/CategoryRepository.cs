@@ -3,9 +3,8 @@ using BookManager.Domain.Entities;
 using BookManager.Infrastructure.Context;
 
 namespace BookManager.Infrastructure.Repositories;
-public class CategoryRepository : Repository<Category>, ICategoryRepository
+
+public class CategoryRepository(ApplicationDbContext context)
+    : Repository<Category>(context), ICategoryRepository
 {
-    public CategoryRepository(ApplicationDbContext context) : base(context)
-    {
-    }
 }

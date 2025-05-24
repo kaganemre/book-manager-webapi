@@ -5,15 +5,12 @@ using Microsoft.EntityFrameworkCore;
 
 namespace BookManager.Infrastructure.Repositories;
 
-public class BookRepository : Repository<Book>, IBookRepository
+public class BookRepository(ApplicationDbContext context) : Repository<Book>(context), IBookRepository
 {
-    public BookRepository(ApplicationDbContext context) : base(context)
-    {
-    }
     public override async Task<Book?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
     {
-        return await _context.Books.Include(b => b.Category)
-            .FirstOrDefaultAsync(b => b.Id == id, cancellationToken)
-            ?? throw new KeyNotFoundException("Kitap bulunamadı");
+        return await _context.Books
+            .Include(b => b.Category)
+            .FirstOrDefaultAsync(b => b.Id == id, cancellationToken);
     }
 }

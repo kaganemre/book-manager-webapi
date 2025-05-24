@@ -9,7 +9,8 @@ namespace BookManager.Application.Features.Books.Commands;
 
 public sealed record CreateBookCommand : BookCommandBase, ICommand<CreateBookCommandResponse>;
 public sealed class CreateBookCommandValidator : BaseBookCommandValidator<CreateBookCommand> { }
-internal sealed class CreateBookCommandHandler(IUnitOfWork unitOfWork) : ICommandHandler<CreateBookCommand, CreateBookCommandResponse>
+internal sealed class CreateBookCommandHandler(IUnitOfWork unitOfWork)
+    : ICommandHandler<CreateBookCommand, CreateBookCommandResponse>
 {
     public async Task<Result<CreateBookCommandResponse>> Handle(CreateBookCommand command, CancellationToken cancellationToken)
     {
