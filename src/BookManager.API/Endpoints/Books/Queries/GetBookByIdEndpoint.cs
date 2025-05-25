@@ -10,7 +10,7 @@ public class GetBookByIdEndpoint(IQueryHandler<GetBookByIdQuery, GetBookByIdQuer
     public override void Configure()
     {
         Get("/book/{id}");
-        Roles("User");
+        Roles("Admin", "User");
     }
     public override async Task HandleAsync(GetBookByIdQuery req, CancellationToken ct)
     {

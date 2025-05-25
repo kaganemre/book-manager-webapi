@@ -1,5 +1,6 @@
 using BookManager.Application.Interfaces;
 using BookManager.Application.Interfaces.Messaging;
+using FastEndpoints;
 using FluentResults;
 using FluentValidation;
 using Mapster;
@@ -7,7 +8,7 @@ using Mapster;
 namespace BookManager.Application.Features.Books.Queries;
 
 public sealed record GetBookByIdQuery(Guid Id) : IQuery<GetBookByIdQueryResponse>;
-public sealed class GetBookByIdQueryValidator : AbstractValidator<GetBookByIdQuery>
+public sealed class GetBookByIdQueryValidator : Validator<GetBookByIdQuery>
 {
     public GetBookByIdQueryValidator()
     {
