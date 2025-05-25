@@ -1,12 +1,13 @@
 using BookManager.Application.Interfaces;
-using FastEndpoints;
+using BookManager.Application.Interfaces.Messaging;
+using FluentResults;
 using FluentValidation;
 using Mapster;
 
 namespace BookManager.Application.Features.Books.Queries;
 
-public sealed record GetBookByIdQueryRequest(Guid Id);
-public sealed class GetBookByIdQueryValidator : Validator<GetBookByIdQueryRequest>
+public sealed record GetBookByIdQuery(Guid Id) : IQuery<GetBookByIdQueryResponse>;
+public sealed class GetBookByIdQueryValidator : AbstractValidator<GetBookByIdQuery>
 {
     public GetBookByIdQueryValidator()
     {
@@ -15,16 +16,18 @@ public sealed class GetBookByIdQueryValidator : Validator<GetBookByIdQueryReques
             .WithMessage("Geçerli bir kitap kimliği belirtilmelidir.");
     }
 }
-public sealed class GetBookByIdQueryHandler
+internal sealed class GetBookByIdQueryHandler(IUnitOfWork unitOfWork)
+    : IQueryHandler<GetBookByIdQuery, GetBookByIdQueryResponse>
 {
-    private readonly IUnitOfWork _unitOfWork;
-    public GetBookByIdQueryHandler(IUnitOfWork unitOfWork)
+    public async Task<Result<GetBookByIdQueryResponse>> Handle(GetBookByIdQuery query, CancellationToken cancellationToken)
     {
-        _unitOfWork = unitOfWork;
-    }
-    public async Task<GetBookByIdQueryResponse> HandleAsync(GetBookByIdQueryRequest req, CancellationToken ct)
-    {
-        var book = await _unitOfWork.BookRepository.GetByIdAsync(req.Id, ct);
+        var book = await unitOfWork.BookRepository.GetByIdAsync(query.Id, cancellationToken);
+
+        if (book is null)
+        {
+            return Result.Fail("Kitap bulunamadı");
+        }
+
         return book.Adapt<GetBookByIdQueryResponse>();
     }
 }

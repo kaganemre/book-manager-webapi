@@ -13,7 +13,14 @@ public class DeleteBookEndpoint(Messaging.ICommandHandler<DeleteBookCommand> han
     }
     public override async Task HandleAsync(DeleteBookCommand req, CancellationToken ct)
     {
-        await handler.Handle(req, ct);
+        var result = await handler.Handle(req, ct);
+
+        if (result.IsFailed)
+        {
+            await SendNotFoundAsync(ct);
+            return;
+        }
+
         await SendNoContentAsync(ct);
     }
 }

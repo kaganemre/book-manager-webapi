@@ -1,15 +1,16 @@
 using BookManager.Application.Common.Services;
-using FastEndpoints;
+using BookManager.Application.Interfaces.Messaging;
+using FluentResults;
 using FluentValidation;
-using Mapster;
 using Microsoft.AspNetCore.Identity;
 
 namespace BookManager.Application.Features.Auth.Commands;
 
-public sealed record LoginUserCommandRequest(string Email, string Password);
-public sealed class LoginUserCommandRequestValidator : Validator<LoginUserCommandRequest>
+public sealed record LoginUserCommand(string Email, string Password)
+    : ICommand<LoginUserCommandResponse>;
+public sealed class LoginUserCommandValidator : AbstractValidator<LoginUserCommand>
 {
-    public LoginUserCommandRequestValidator()
+    public LoginUserCommandValidator()
     {
         RuleFor(x => x.Email)
             .NotEmpty().WithMessage("E-post boş olamaz!")
@@ -20,25 +21,29 @@ public sealed class LoginUserCommandRequestValidator : Validator<LoginUserComman
         .MinimumLength(6).WithMessage("Şifre en az 6 karakter olmalıdır!");
     }
 }
-public sealed class LoginUserCommandHandler
+internal sealed class LoginUserCommandHandler(
+    UserManager<IdentityUser> userManager,
+    IJwtTokenService jwtTokenService
+) : ICommandHandler<LoginUserCommand, LoginUserCommandResponse>
 {
-    private readonly UserManager<IdentityUser> _userManager;
-    private readonly IJwtTokenService _jwtTokenService;
-    public LoginUserCommandHandler(UserManager<IdentityUser> userManager, IJwtTokenService jwtTokenService)
+    public async Task<Result<LoginUserCommandResponse>> Handle(LoginUserCommand command, CancellationToken cancellationToken)
     {
-        _userManager = userManager;
-        _jwtTokenService = jwtTokenService;
-    }
-    public async Task<LoginUserCommandResponse> HandleAsync(LoginUserCommandRequest req, CancellationToken ct)
-    {
-        var user = await _userManager.FindByEmailAsync(req.Email);
+        var user = await userManager.FindByEmailAsync(command.Email);
 
-        if (user == null || !await _userManager.CheckPasswordAsync(user, req.Password))
+        if (user is null)
         {
-            throw new UnauthorizedAccessException("Geçersiz kullanıcı adı veya şifre!");
+            return Result.Fail("Kullanıcı bulunamadı.");
         }
 
-        return new LoginUserCommandResponse { Token = await _jwtTokenService.GenerateToken(user) };
+        var isPasswordValid = await userManager.CheckPasswordAsync(user, command.Password);
+        if (!isPasswordValid)
+        {
+            return Result.Fail("Geçersiz kullanıcı adı veya şifre.");
+        }
+
+        var token = await jwtTokenService.GenerateToken(user);
+
+        return Result.Ok(new LoginUserCommandResponse { Token = token });
     }
 }
 public sealed class LoginUserCommandResponse

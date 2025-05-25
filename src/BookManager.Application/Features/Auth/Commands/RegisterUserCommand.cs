@@ -1,14 +1,15 @@
-using BookManager.Application.Common.Exceptions;
-using FastEndpoints;
+using BookManager.Application.Interfaces.Messaging;
+using FluentResults;
 using FluentValidation;
 using Microsoft.AspNetCore.Identity;
 
 namespace BookManager.Application.Features.Auth.Commands;
 
-public sealed record RegisterUserCommandRequest(string UserName, string Email, string Password);
-public sealed class RegisterUserCommandRequestValidator : Validator<RegisterUserCommandRequest>
+public sealed record RegisterUserCommand(string UserName, string Email, string Password)
+    : ICommand;
+public sealed class RegisterUserCommandValidator : AbstractValidator<RegisterUserCommand>
 {
-    public RegisterUserCommandRequestValidator()
+    public RegisterUserCommandValidator()
     {
         RuleFor(x => x.UserName)
             .NotEmpty().WithMessage("Kullanıcı adı boş olamaz!")
@@ -23,26 +24,25 @@ public sealed class RegisterUserCommandRequestValidator : Validator<RegisterUser
             .MinimumLength(6).WithMessage("Şifre en az 6 karakter olmalıdır!");
     }
 }
-public sealed class RegisterUserCommandHandler
+internal sealed class RegisterUserCommandHandler(UserManager<IdentityUser> userManager)
+    : ICommandHandler<RegisterUserCommand>
 {
-    private readonly UserManager<IdentityUser> _userManager;
-    public RegisterUserCommandHandler(UserManager<IdentityUser> userManager)
-    {
-        _userManager = userManager;
-    }
-    public async Task HandleAsync(RegisterUserCommandRequest req, CancellationToken ct)
+    public async Task<Result> Handle(RegisterUserCommand command, CancellationToken cancellationToken)
     {
         var user = new IdentityUser
         {
-            UserName = req.UserName,
-            Email = req.Email
+            UserName = command.UserName,
+            Email = command.Email
         };
 
-        var result = await _userManager.CreateAsync(user, req.Password);
+        var result = await userManager.CreateAsync(user, command.Password);
 
         if (!result.Succeeded)
         {
-            throw new ConflictException("Bu kullanıcı adı veya e-posta zaten kayıtlı!");
+            var errors = result.Errors.Select(e => e.Description);
+            return Result.Fail(errors);
         }
+
+        return Result.Ok();
     }
 }

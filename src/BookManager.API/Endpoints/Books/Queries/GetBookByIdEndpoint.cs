@@ -1,23 +1,27 @@
 using BookManager.Application.Features.Books.Queries;
+using BookManager.Application.Interfaces.Messaging;
 using FastEndpoints;
 
 namespace BookManager.API.Endpoints.Books.Queries;
 
-public class GetBookByIdEndpoint : Endpoint<GetBookByIdQueryRequest, GetBookByIdQueryResponse>
+public class GetBookByIdEndpoint(IQueryHandler<GetBookByIdQuery, GetBookByIdQueryResponse> handler)
+    : Endpoint<GetBookByIdQuery, GetBookByIdQueryResponse>
 {
-    private readonly GetBookByIdQueryHandler _handler;
-    public GetBookByIdEndpoint(GetBookByIdQueryHandler handler)
-    {
-        _handler = handler;
-    }
     public override void Configure()
     {
         Get("/book/{id}");
         Roles("User");
     }
-    public override async Task HandleAsync(GetBookByIdQueryRequest req, CancellationToken ct)
+    public override async Task HandleAsync(GetBookByIdQuery req, CancellationToken ct)
     {
-        var result = await _handler.HandleAsync(req, ct);
-        await SendOkAsync(result, ct);
+        var result = await handler.Handle(req, ct);
+
+        if (result.IsFailed)
+        {
+            await SendNotFoundAsync(ct);
+            return;
+        }
+
+        await SendOkAsync(result.Value, ct);
     }
 }

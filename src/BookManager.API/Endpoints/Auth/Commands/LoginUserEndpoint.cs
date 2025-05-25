@@ -1,23 +1,29 @@
 using BookManager.Application.Features.Auth.Commands;
+using Messaging = BookManager.Application.Interfaces.Messaging;
 using FastEndpoints;
 
 namespace BookManager.API.Endpoints.Auth.Commands;
 
-public class LoginUserEndpoint : Endpoint<LoginUserCommandRequest, LoginUserCommandResponse>
+public class LoginUserEndpoint(Messaging.ICommandHandler<LoginUserCommand, LoginUserCommandResponse> handler)
+    : Endpoint<LoginUserCommand, LoginUserCommandResponse>
 {
-    private readonly LoginUserCommandHandler _handler;
-    public LoginUserEndpoint(LoginUserCommandHandler handler)
-    {
-        _handler = handler;
-    }
     public override void Configure()
     {
         Post("/auth/login");
         AllowAnonymous();
     }
-    public override async Task HandleAsync(LoginUserCommandRequest req, CancellationToken ct)
+    public override async Task HandleAsync(LoginUserCommand req, CancellationToken ct)
     {
-        await SendOkAsync(await _handler.HandleAsync(req, ct), ct);
+        var result = await handler.Handle(req, ct);
+
+        if (result.IsFailed)
+        {
+            foreach (var error in result.Errors) AddError(error.Message);
+
+            ThrowIfAnyErrors(401);
+        }
+
+        await SendOkAsync(result.Value, ct);
     }
 
 }

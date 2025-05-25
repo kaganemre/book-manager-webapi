@@ -14,7 +14,14 @@ public class UpdateBookEndpoint(Messaging.ICommandHandler<UpdateBookCommand> han
     }
     public override async Task HandleAsync(UpdateBookCommand req, CancellationToken ct)
     {
-        await handler.Handle(req, ct);
+        var result = await handler.Handle(req, ct);
+
+        if (result.IsFailed)
+        {
+            foreach (var error in result.Errors) AddError("Id", error.Message);
+            ThrowIfAnyErrors(404);
+        }
+
         await SendNoContentAsync(ct);
     }
 }

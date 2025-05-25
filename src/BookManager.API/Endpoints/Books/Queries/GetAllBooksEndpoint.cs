@@ -1,15 +1,12 @@
 using BookManager.Application.Features.Books.Queries;
+using BookManager.Application.Interfaces.Messaging;
 using FastEndpoints;
 
 namespace BookManager.API.Endpoints.Books.Queries;
 
-public class GetAllBooksEndpoint : EndpointWithoutRequest<IReadOnlyList<GetAllBooksQueryResponse>>
+public class GetAllBooksEndpoint(IQueryHandler<GetAllBooksQuery, IReadOnlyList<GetAllBooksQueryResponse>> handler)
+    : EndpointWithoutRequest<IReadOnlyList<GetAllBooksQueryResponse>>
 {
-    private readonly GetAllBooksQueryHandler _handler;
-    public GetAllBooksEndpoint(GetAllBooksQueryHandler handler)
-    {
-        _handler = handler;
-    }
     public override void Configure()
     {
         Get("/books");
@@ -17,7 +14,7 @@ public class GetAllBooksEndpoint : EndpointWithoutRequest<IReadOnlyList<GetAllBo
     }
     public override async Task HandleAsync(CancellationToken ct)
     {
-        var result = await _handler.HandleAsync(ct);
-        await SendOkAsync(result, ct);
+        var result = await handler.Handle(new GetAllBooksQuery(), ct);
+        await SendOkAsync(result.Value, ct);
     }
 }

@@ -5,7 +5,8 @@ using FastEndpoints;
 
 namespace BookManager.API.Endpoints.Books.Commands;
 
-public class CreateBookEndpoint(Messaging.ICommandHandler<CreateBookCommand, CreateBookCommandResponse> handler) : Endpoint<CreateBookCommand, CreateBookCommandResponse>
+public class CreateBookEndpoint(Messaging.ICommandHandler<CreateBookCommand, CreateBookCommandResponse> handler)
+    : Endpoint<CreateBookCommand, CreateBookCommandResponse>
 {
     public override void Configure()
     {
@@ -16,10 +17,16 @@ public class CreateBookEndpoint(Messaging.ICommandHandler<CreateBookCommand, Cre
     {
         var result = await handler.Handle(req, ct);
 
+        if (result.IsFailed)
+        {
+            foreach (var error in result.Errors) AddError(error.Message);
+            ThrowIfAnyErrors(409);
+        }
+
         await SendCreatedAtAsync<GetBookByIdEndpoint>(
-            new { id = result.Value.Id },
-            result.Value,
-            cancellation: ct
-        );
+                new { id = result.Value.Id },
+                result.Value,
+                cancellation: ct
+            );
     }
 }

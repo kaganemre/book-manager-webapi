@@ -1,20 +1,24 @@
 using BookManager.Application.Interfaces;
+using BookManager.Application.Interfaces.Messaging;
+using FluentResults;
 using Mapster;
 using Microsoft.EntityFrameworkCore;
 
 namespace BookManager.Application.Features.Books.Queries;
 
-public sealed class GetAllBooksQueryHandler
+public sealed record GetAllBooksQuery() : IQuery<IReadOnlyList<GetAllBooksQueryResponse>>;
+internal sealed class GetAllBooksQueryHandler(IUnitOfWork unitOfWork)
+    : IQueryHandler<GetAllBooksQuery, IReadOnlyList<GetAllBooksQueryResponse>>
 {
-    private readonly IUnitOfWork _unitOfWork;
-    public GetAllBooksQueryHandler(IUnitOfWork unitOfWork)
+    public async Task<Result<IReadOnlyList<GetAllBooksQueryResponse>>> Handle(GetAllBooksQuery query, CancellationToken cancellationToken)
     {
-        _unitOfWork = unitOfWork;
-    }
-    public async Task<IReadOnlyList<GetAllBooksQueryResponse>> HandleAsync(CancellationToken ct)
-    {
-        var books = await _unitOfWork.BookRepository.GetAll().ToListAsync(ct);
-        return books.Adapt<IReadOnlyList<GetAllBooksQueryResponse>>();
+        var books = await unitOfWork.BookRepository
+            .GetAll()
+            .ToListAsync(cancellationToken);
+
+        var booksDto = books.Adapt<IReadOnlyList<GetAllBooksQueryResponse>>();
+
+        return Result.Ok(booksDto);
     }
 }
 public sealed class GetAllBooksQueryResponse

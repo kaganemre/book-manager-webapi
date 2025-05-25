@@ -1,24 +1,27 @@
 using BookManager.Application.Features.Auth.Commands;
+using Messaging = BookManager.Application.Interfaces.Messaging;
 using FastEndpoints;
 
 namespace BookManager.API.Endpoints.Auth.Commands;
 
-public class RegisterUserEndpoint : Endpoint<RegisterUserCommandRequest, bool>
+public class RegisterUserEndpoint(Messaging.ICommandHandler<RegisterUserCommand> handler)
+    : Endpoint<RegisterUserCommand>
 {
-    private readonly RegisterUserCommandHandler _handler;
-
-    public RegisterUserEndpoint(RegisterUserCommandHandler handler)
-    {
-        _handler = handler;
-    }
     public override void Configure()
     {
         Post("/auth/register");
         AllowAnonymous();
     }
-    public override async Task HandleAsync(RegisterUserCommandRequest req, CancellationToken ct)
+    public override async Task HandleAsync(RegisterUserCommand req, CancellationToken ct)
     {
-        await _handler.HandleAsync(req, ct);
+        var result = await handler.Handle(req, ct);
+
+        if (result.IsFailed)
+        {
+            foreach (var error in result.Errors) AddError(error.Message);
+            ThrowIfAnyErrors(400);
+        }
+
         await SendAsync(true, 201, ct);
     }
 }
