@@ -1,3 +1,4 @@
+using BookManager.Application.Common.Decorators.Logging;
 using BookManager.Application.Common.Decorators.Validation;
 using BookManager.Application.Features.Books.Commands;
 using FastEndpoints;
@@ -11,8 +12,6 @@ public static class ApplicationServiceRegistration
 {
     public static IServiceCollection AddApplication(this IServiceCollection services)
     {
-
-
         services.Scan(scan => scan.FromAssemblyOf<CreateBookCommandHandler>()
             .AddClasses(classes => classes.AssignableTo(typeof(Messaging.ICommandHandler<,>)), publicOnly: false)
                 .AsImplementedInterfaces()
@@ -31,6 +30,8 @@ public static class ApplicationServiceRegistration
                 .WithScopedLifetime()
         );
 
+        services.Decorate(typeof(Messaging.ICommandHandler<,>), typeof(LoggingCommandHandler<,>));
+        services.Decorate(typeof(Messaging.ICommandHandler<>), typeof(LoggingCommandBaseHandler<>));
         services.Decorate(typeof(Messaging.ICommandHandler<,>), typeof(ValidationCommandHandler<,>));
         services.Decorate(typeof(Messaging.ICommandHandler<>), typeof(ValidationCommandBaseHandler<>));
 
