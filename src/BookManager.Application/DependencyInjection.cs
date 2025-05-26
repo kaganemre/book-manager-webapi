@@ -1,6 +1,7 @@
 using BookManager.Application.Common.Decorators.Logging;
 using BookManager.Application.Common.Decorators.Validation;
 using BookManager.Application.Features.Books.Commands;
+using BookManager.Application.Interfaces.Messaging;
 using FastEndpoints;
 using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
@@ -34,6 +35,8 @@ public static class ApplicationServiceRegistration
         services.Decorate(typeof(Messaging.ICommandHandler<>), typeof(LoggingCommandBaseHandler<>));
         services.Decorate(typeof(Messaging.ICommandHandler<,>), typeof(ValidationCommandHandler<,>));
         services.Decorate(typeof(Messaging.ICommandHandler<>), typeof(ValidationCommandBaseHandler<>));
+
+        services.Decorate(typeof(IQueryHandler<,>), typeof(LoggingQueryHandler<,>));
 
         services.AddFastEndpoints();
 

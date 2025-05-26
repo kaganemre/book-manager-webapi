@@ -13,6 +13,8 @@ public sealed class GetBookByIdQueryValidator : Validator<GetBookByIdQuery>
     public GetBookByIdQueryValidator()
     {
         RuleFor(x => x.Id)
+            .NotEmpty()
+            .Must(id => Guid.TryParse(id.ToString(), out _))
             .NotEqual(Guid.Empty)
             .WithMessage("Geçerli bir kitap kimliği belirtilmelidir.");
     }

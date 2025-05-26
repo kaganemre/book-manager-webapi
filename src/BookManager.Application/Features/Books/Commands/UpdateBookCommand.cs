@@ -13,6 +13,8 @@ public sealed class UpdateBookCommandValidator : BaseBookCommandValidator<Update
     public UpdateBookCommandValidator()
     {
         RuleFor(x => x.Id)
+            .NotEmpty()
+            .Must(id => Guid.TryParse(id.ToString(), out _))
             .NotEqual(Guid.Empty)
             .WithMessage("Geçerli bir kitap kimliği belirtilmelidir.");
     }

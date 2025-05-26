@@ -11,8 +11,10 @@ public sealed class DeleteBookCommandValidator : AbstractValidator<DeleteBookCom
     public DeleteBookCommandValidator()
     {
         RuleFor(x => x.Id)
-            .NotEqual(Guid.Empty)
-            .WithMessage("Geçerli bir kitap kimliği belirtilmelidir.");
+             .NotEmpty()
+             .Must(id => Guid.TryParse(id.ToString(), out _))
+             .NotEqual(Guid.Empty)
+             .WithMessage("Geçerli bir kitap kimliği belirtilmelidir.");
     }
 }
 internal sealed class DeleteBookCommandHandler(IUnitOfWork unitOfWork)
