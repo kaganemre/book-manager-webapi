@@ -241,6 +241,7 @@ JWT token’ları IJwtTokenService aracılığıyla oluşturulur.
 
 FastEndpoints ile, endpoint'lere erişim rollere göre sınırlanabilir. Aşağıdaki örnekte yalnızca "Admin" rolüne sahip kullanıcıların /books endpoint’ine erişmesine izin verilmektedir:
 
+```csharp
 public class CreateBookEndpoint(ICommandHandler<CreateBookCommand, CreateBookCommandResponse> handler)
     : Endpoint<CreateBookCommand, CreateBookCommandResponse>
 {
@@ -255,6 +256,7 @@ public class CreateBookEndpoint(ICommandHandler<CreateBookCommand, CreateBookCom
        ...
     }
 }
+```
 
 ---
 
