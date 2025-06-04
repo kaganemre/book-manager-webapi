@@ -183,7 +183,7 @@ services.Decorate(typeof(ICommandHandler<,>), typeof(LoggingCommandHandler<,>));
 
 Katmanlar:
 
-> [Validation 🛡️] → [Logging 📝] → [CommandHandler 📦]
+> [Logging 📝] → [Validation 🛡️] → [CommandHandler 📦]
 
 Her bir sorumluluk ayrı katmanlarda tanımlanır, kolayca test edilebilir ve gerektiğinde genişletilebilir yapıdadır.
 
