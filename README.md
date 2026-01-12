@@ -1,40 +1,48 @@
 # 📚 Book Manager
 
-CQRS Pattern ile neredeyse özdeşleşmiş olan MediatR'ın ticari sürüme geçme kararından sonra ücretsiz alternatifler arasından Decorator Pattern ile CQRS Pattern yaklaşımı (Milan Jovanović) öne çıkıyor. Esnek mimarisi, net sorumluluk ayrımları ve bağımlılıklarının az olması dikkatimi çekti. Bu sebeple .NET 9 ile Clean Architecture temelli geliştirdiğim Book Manager Web API projesinde Milan Jovanović'in yaklaşımını uyguladım. Minimal API tarafında ise FastEndpoints kütüphanesini kullandım.
+![.NET](https://img.shields.io/badge/.NET-9.0-512BD4?logo=dotnet&logoColor=white)
+![Clean Architecture](https://img.shields.io/badge/Architecture-Clean%20Architecture-success)
+![CQRS](https://img.shields.io/badge/CQRS-Decorator%20Pattern-blueviolet)
+![License](https://img.shields.io/github/license/kaganemre/book-manager-webapi)
 
-Decorator Pattern'ı uygularken bu dokümanda örnek olarak aldığımız temel sınıf CreateBookCommandHandler'dır. İlgili endpoint'te ICommandHandler<CreateBookCommand, CreateBookCommandResponse> handler'ı istediğimizde DI Container bize CreateBookCommandHandler sınıfını önce ValidationCommandHandler sonra da LoggingCommandHandler decorator sınıflarıyla sararak(dekore ederek) gönderir.
+After MediatR — which has almost become synonymous with the CQRS Pattern — announced its transition to a commercial license, the CQRS approach implemented with the Decorator Pattern (popularized by Milan Jovanović) has stood out among free alternatives. Its flexible architecture, clear separation of responsibilities, and minimal dependencies particularly caught my attention.
 
-LoggingCommandHandler sınıfındaki Handle metodu gerekli loglama işlemlerini yaptıktan sonra sınıfın constructor'ına ValidationCommandHandler'dan gelen ICommandHandler<CreateBookCommand, CreateBookCommandResponse> innerHandler objesinin Handle metodunu çağırır. ValidationCommandHandler da aynı yolu izleyip gerekli validasyon kurallarını kontrol ettikten sonra en içteki CreateBookCommandHandler'ın Handle metodunu çağırarak pipeline'ı sonlandırır.
+For this reason, in the Book Manager Web API project that I developed using Clean Architecture on .NET 9, I implemented Milan Jovanović’s CQRS + Decorator Pattern approach. On the Minimal API side, I used the FastEndpoints library.
 
-Decorator Pattern yaklaşımının, handler sınıflarına validasyon ve loglama gibi yeni davranışlar kazandırırken inheritance yerine composition'ı kullanması daha esnek ve modüler bir mimari sağlıyor. Ayrıca composition ile genişleyerek net sorumluluk ayrımı (SRP) ve değişime kapalı genişlemeye açık (OCP) gibi SOLID prensiplerine de uyuyor.
+While applying the Decorator Pattern, the base class used as a reference example in this document is CreateBookCommandHandler.
+When an ICommandHandler<CreateBookCommand, CreateBookCommandResponse> is requested in the related endpoint, the DI container returns the CreateBookCommandHandler wrapped (decorated) first with ValidationCommandHandler and then with LoggingCommandHandler.
 
-Projeye ait tüm detayları ve örnek kodları aşağıda bulabilirsiniz 👇
+The Handle method inside LoggingCommandHandler performs the required logging and then calls the Handle method of the inner ICommandHandler<CreateBookCommand, CreateBookCommandResponse> instance that comes from ValidationCommandHandler.
+ValidationCommandHandler follows the same approach: after applying validation rules, it calls the innermost CreateBookCommandHandler, thus completing the pipeline.
+
+The Decorator Pattern provides a more flexible and modular architecture by using composition instead of inheritance when adding new behaviors such as validation and logging to handler classes.
+By leveraging composition, it also adheres to SOLID principles such as Single Responsibility (SRP) and Open/Closed Principle (OCP).
+
+You can find all project details and example code below 👇
 
 ---
 
 ## 🚀 Features
 
-* ✅ Clean Architecture ile katmanlar arası net ayrım
+* ✅ Clear layer separation with Clean Architecture
 * ✅ CQRS (Command Query Responsibility Segregation)
-* ✅ Decorator Pattern ile Logging ve Validation
-* ✅ Scrutor ile Dependency Injection ve servis dekorasyonu
-* ✅ MediatR kullanılmadan — doğrudan yönlendirme yapılır ve gereksiz soyutlamalar olmadan çalışır
-* ✅ FastEndpoints tabanlı API yönlendirmesi
-* ✅ FluentValidation ile command/query doğrulama
-* ✅ FluentResults ile başarılı ve başarısız durumları yönetme
-* ✅ Global Error Handling ile merkezi hata yönetimi ve tutarlı HTTP yanıtları
-* ✅ JWT tabanlı Authentication ve Microsoft Identity ile Authorization
-* ✅ Entity Framework Core ile SQL Server entegrasyonu
-* ✅ Repository Pattern ve Unit of Work Pattern ile veri erişim soyutlaması
-* ✅ Mapster ile object mapping
-
+* ✅ Logging and Validation via Decorator Pattern
+* ✅ Dependency Injection and service decoration with Scrutor
+* ✅ No MediatR — direct routing without unnecessary abstractions
+* ✅ FastEndpoints-based API routing
+* ✅ Command/query validation with FluentValidation
+* ✅ Success and failure handling with FluentResults
+* ✅ Centralized error handling with Global Error Handling and consistent HTTP responses
+* ✅ JWT-based Authentication and Authorization with Microsoft Identity
+* ✅ SQL Server integration with Entity Framework Core
+* ✅ Data access abstraction using Repository Pattern and Unit of Work Pattern
+* ✅ Object mapping with Mapster
 
 ---
 
 ## 🧱 Tech Stack
 
 * .NET 9
-* C# 13
 * FastEndpoints
 * FluentValidation
 * FluentResults
@@ -45,10 +53,9 @@ Projeye ait tüm detayları ve örnek kodları aşağıda bulabilirsiniz 👇
 * Microsoft.AspNetCore.Identity.EntityFrameworkCore
 * Scalar.AspNetCore
   
-
 ---
 
-## 🗂 Proje Yapısı
+## 🗂 Project Structure
 
 ```
 BookManager/
@@ -62,7 +69,7 @@ BookManager/
 
 ## 🧩 CQRS: Commands & Queries
 
-### Command Örneği
+### Command Example
 
 ```csharp
 public sealed record CreateBookCommand : BookCommandBase, ICommand<CreateBookCommandResponse>;
@@ -76,16 +83,17 @@ internal sealed class CreateBookCommandHandler(IUnitOfWork unitOfWork)
     {
         var exists = await unitOfWork.BookRepository.AnyAsync(b => b.ISBN == command.ISBN, cancellationToken);
         if (exists)
-            return Result.Fail("Aynı ISBN ile zaten bir kitap var."); // business logic(iş mantığı)...
+            return Result.Fail("A book with the same ISBN already exists."); // business logic
 
-        var bookEntity = command.Adapt<Book>();	//Mapster ile object mapping
-        unitOfWork.BookRepository.Add(bookEntity); // EF Core ile entity ekleme & takibi
-        await unitOfWork.SaveChangesAsync(cancellationToken); // Beritabanına kayıt etme.
+        var bookEntity = command.Adapt<Book>(); // Object mapping with Mapster
+        unitOfWork.BookRepository.Add(bookEntity); // Entity tracking & insertion via EF Core
+        await unitOfWork.SaveChangesAsync(cancellationToken); // Persist changes to database
 
         var response = bookEntity.Adapt<CreateBookCommandResponse>();
         return Result.Ok(response);
     }
 }
+
 public sealed class CreateBookCommandResponse
 {
     public Guid Id { get; set; }
@@ -94,7 +102,7 @@ public sealed class CreateBookCommandResponse
 }
 ```
 
-### Query Örneği
+### Query Example
 
 ```csharp
 public sealed record GetBookByIdQuery(Guid Id) : IQuery<GetBookByIdQueryResponse>;
@@ -110,7 +118,7 @@ internal sealed class GetBookByIdQueryHandler(IUnitOfWork unitOfWork)
 
         if (book is null)
         {
-            return Result.Fail("Kitap bulunamadı");
+            return Result.Fail("Book not found");
         }
 
         return book.Adapt<GetBookByIdQueryResponse>();
@@ -124,7 +132,7 @@ public sealed class GetBookByIdQueryResponse {...}
 
 ## 🎀 Decorators: Validation & Logging
 
-Validation Decorator:
+Validation Decorator
 
 ```csharp
 internal sealed class ValidationCommandHandler<TCommand, TResponse>(
@@ -135,17 +143,17 @@ internal sealed class ValidationCommandHandler<TCommand, TResponse>(
 {
     public async Task<Result<TResponse>> Handle(TCommand command, CancellationToken cancellationToken)
     {
-        var failures = await ValidationHelper.Validate(command, validators, cancellationToken); // FluentValidation ile validasyon kontrolü
+        var failures = await ValidationHelper.Validate(command, validators, cancellationToken); // Validation with FluentValidation
 
         if (!failures.Any())
-            return await innerHandler.Handle(command, cancellationToken); // Doğrulama başarılıysa ilgili CommandHandler'ın Handle metodunu çağır
+            return await innerHandler.Handle(command, cancellationToken); // Call actual CommandHandler if validation passes
 
         return ValidationHelper.HandleValidationResult<TResponse>(failures);
     }
 }
 ```
 
-Logging Decorator:
+Logging Decorator
 
 ```csharp
 internal sealed class LoggingCommandHandler<TCommand, TResponse>(
@@ -157,7 +165,7 @@ internal sealed class LoggingCommandHandler<TCommand, TResponse>(
     public async Task<Result<TResponse>> Handle(TCommand command, CancellationToken cancellationToken)
     {
         logger.LogInformation("Handling command {CommandType}", typeof(TCommand).Name);
-        var result = await innerHandler.Handle(command, cancellationToken); // ValidationCommandHandler'ın Handle metodunu çağır
+        var result = await innerHandler.Handle(command, cancellationToken); // Calls ValidationCommandHandler
         logger.LogInformation("Handled command {CommandType} with result: {IsSuccess}", typeof(TCommand).Name, result.IsSuccess);
 
         return result;
@@ -165,40 +173,48 @@ internal sealed class LoggingCommandHandler<TCommand, TResponse>(
 }
 ```
 
-Scrutor ile Decorator Pattern'ı uygulama:
+Applying the Decorator Pattern with Scrutor
 
 ```csharp
-// ICommandHandler<,> çağırıldığında CreateBookCommandHandler gibi concrete sınıfları gönder.
+// When ICommandHandler<,> is requested, concrete implementations such as CreateBookCommandHandler are resolved.
 
 services.Scan(scan => scan.FromAssemblyOf<CreateBookCommandHandler>()
-		.AddClasses(classes => classes.AssignableTo(typeof(Messaging.ICommandHandler<,>)), publicOnly: false)
-			.AsImplementedInterfaces() 
-			.WithScopedLifetime()
-			
-/*services.Decorate ile en son tanımlanan decorator en dışa sarılır ve ilk çalışan decorator olur. Dekore etme işlemi için Handle ve Decorator sınıfların ICommandHandler<in TCommand, TResponse> interface'ini implement etmesi gerekir.*/
+        .AddClasses(classes => classes.AssignableTo(typeof(Messaging.ICommandHandler<,>)), publicOnly: false)
+            .AsImplementedInterfaces()
+            .WithScopedLifetime()
 
-services.Decorate(typeof(ICommandHandler<,>), typeof(ValidationCommandHandler<,>)); 
+/*
+With services.Decorate, the last registered decorator becomes the outermost
+and is the first one executed.
+Both the handler and decorator classes must implement
+ICommandHandler<TCommand, TResponse>.
+*/
+
+services.Decorate(typeof(ICommandHandler<,>), typeof(ValidationCommandHandler<,>));
 services.Decorate(typeof(ICommandHandler<,>), typeof(LoggingCommandHandler<,>));
 ```
 
-Katmanlar:
+Pipeline order:
 
 > [Logging 📝] → [Validation 🛡️] → [CommandHandler 📦]
 
-Her bir sorumluluk ayrı katmanlarda tanımlanır, kolayca test edilebilir ve gerektiğinde genişletilebilir yapıdadır.
+Each responsibility is defined in its own layer, making the system easy to test and extend.
 
 ---
 
 ## 🧪 Testing
 
-* IApplicationDbContext ve IUnitOfWork gibi arayüzler, birimlerin kolayca mock’lanmasını sağlar
-* Handler sınıfları küçük ve sadece kendi iş mantığını içerir
+* Interfaces such as IApplicationDbContext and IUnitOfWork enable easy mocking
+* Handler classes are small and contain only their own business logic
 
 ---
 
-## 🧵 Minimal API Örneği
+## 🧵 Minimal API Example
 
-Aşağıda yer alan CreateBookEndpoint, FastEndpoints kullanılarak oluşturulmuş sade ve etkili bir Minimal API örneğidir. Bu yapı, CQRS mimarisiyle uyumlu çalışır ve komutları ICommandHandler arayüzü üzerinden işler. FastEndpoints; Minimal API'nin sadeliğini korurken, katmanlı yapı, validation, role tabanlı yetkilendirme ve hata yönetimi gibi özellikleri yerleşik olarak sunar. Bu sayede proje daha modüler, test edilebilir ve bakımı kolay hale gelir.
+The CreateBookEndpoint below is a clean and effective Minimal API example built using FastEndpoints.
+It integrates seamlessly with the CQRS architecture and processes commands via the ICommandHandler interface.
+
+FastEndpoints preserves the simplicity of Minimal APIs while providing built-in support for layered architecture, validation, role-based authorization, and error handling — resulting in a more modular, testable, and maintainable project.
 
 ```csharp
 namespace BookManager.API.Endpoints.Books.Commands;
@@ -208,8 +224,8 @@ public class CreateBookEndpoint(Messaging.ICommandHandler<CreateBookCommand, Cre
 {
     public override void Configure()
     {
-        Post("/books");       // HTTP POST metodu tanımı
-        Roles("Admin");       // Yalnızca 'Admin' rolü erişebilir
+        Post("/books");       // HTTP POST endpoint
+        Roles("Admin");       // Only users with 'Admin' role can access
     }
 
     public override async Task HandleAsync(CreateBookCommand req, CancellationToken ct)
@@ -218,16 +234,16 @@ public class CreateBookEndpoint(Messaging.ICommandHandler<CreateBookCommand, Cre
 
         if (result.IsFailed)
         {
-            foreach (var error in result.Errors) // FluentResults hataları toplanır
-                AddError(error.Message); 
+            foreach (var error in result.Errors) // Collect FluentResults errors
+                AddError(error.Message);
 
-            ThrowIfAnyErrors(409); // AddError() ile toplanan hata/hatalar varsa 409 Conflict Exception fırlatılır.
+            ThrowIfAnyErrors(409); // Throws 409 Conflict if any errors were added
         }
 
         await SendCreatedAtAsync<GetBookByIdEndpoint>(
-            new { id = result.Value.Id }, // Oluşturulan kaydın ID’siyle
+            new { id = result.Value.Id }, // ID of the created resource
             result.Value,
-            cancellation: ct			// 201 Created + Location header
+            cancellation: ct              // 201 Created + Location header
         );
     }
 }
@@ -235,11 +251,12 @@ public class CreateBookEndpoint(Messaging.ICommandHandler<CreateBookCommand, Cre
 
 ---
 
-🛡 Kimlik Doğrulama ve Yetkilendirme
+🛡 Authentication & Authorization
 
-JWT token’ları IJwtTokenService aracılığıyla oluşturulur.
+JWT tokens are generated via the IJwtTokenService.
 
-FastEndpoints ile, endpoint'lere erişim rollere göre sınırlanabilir. Aşağıdaki örnekte yalnızca "Admin" rolüne sahip kullanıcıların /books endpoint’ine erişmesine izin verilmektedir:
+With FastEndpoints, access to endpoints can be restricted by roles.
+In the example below, only users with the Admin role are allowed to access the /books endpoint:
 
 ```csharp
 public class CreateBookEndpoint(ICommandHandler<CreateBookCommand, CreateBookCommandResponse> handler)
@@ -248,7 +265,7 @@ public class CreateBookEndpoint(ICommandHandler<CreateBookCommand, CreateBookCom
     public override void Configure()
     {
         Post("/books");
-        Roles("Admin"); // Yalnızca 'Admin' rolü erişebilir
+        Roles("Admin"); // Only 'Admin' role is allowed
     }
 
     public override async Task HandleAsync(CreateBookCommand req, CancellationToken ct)
@@ -260,30 +277,25 @@ public class CreateBookEndpoint(ICommandHandler<CreateBookCommand, CreateBookCom
 
 ---
 
-## 📦 Başlarken
+## 📦 Getting Started
 
 ```bash
-# Clone repo
+# Clone the repository
 $ git clone https://github.com/kaganemre/book-manager-webapi.git
 
-# Proje klasörüne geçin
+# Navigate to the project folder
 $ cd BookManager
 
-# Bağımlılıkları geri yükleyin
+# Restore dependencies
 $ dotnet restore
 
-# Uygulamayı çalıştırın
+# Run the application
 $ dotnet run --project src/BookManager.API
 ```
 
 ---
 
-## ✅ Yapılacaklar / Geliştirmeler
+## 📄 License
 
-*
-
----
-
-## 📄 Lisans
-
-Bu proje MIT Lisansı altında lisanslanmıştır.
+This project is licensed under the **MIT License**.  
+See the [LICENSE](LICENSE) file for details.
