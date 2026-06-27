@@ -7,13 +7,13 @@ using Microsoft.EntityFrameworkCore;
 namespace BookManager.Application.Features.Books.Queries;
 
 public sealed record GetAllBooksQuery() : IQuery<IReadOnlyList<GetAllBooksQueryResponse>>;
-internal sealed class GetAllBooksQueryHandler(IUnitOfWork unitOfWork)
+internal sealed class GetAllBooksQueryHandler(IApplicationDbContext db)
     : IQueryHandler<GetAllBooksQuery, IReadOnlyList<GetAllBooksQueryResponse>>
 {
     public async Task<Result<IReadOnlyList<GetAllBooksQueryResponse>>> Handle(GetAllBooksQuery query, CancellationToken cancellationToken)
     {
-        var books = await unitOfWork.BookRepository
-            .GetAll()
+        var books = await db.Books
+            .AsNoTracking()
             .ToListAsync(cancellationToken);
 
         var booksDto = books.Adapt<IReadOnlyList<GetAllBooksQueryResponse>>();
