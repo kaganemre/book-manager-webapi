@@ -4,6 +4,7 @@ using BookManager.Application.Interfaces.Messaging;
 using FluentResults;
 using FluentValidation;
 using Mapster;
+using Microsoft.EntityFrameworkCore;
 
 namespace BookManager.Application.Features.Books.Commands;
 
@@ -16,24 +17,23 @@ public sealed class UpdateBookCommandValidator : BaseBookCommandValidator<Update
             .NotEmpty()
             .Must(id => Guid.TryParse(id.ToString(), out _))
             .NotEqual(Guid.Empty)
-            .WithMessage("Geçerli bir kitap kimliği belirtilmelidir.");
+            .WithMessage("A valid book ID must be specified.");
     }
 }
-internal sealed class UpdateBookCommandHandler(IUnitOfWork unitOfWork)
+internal sealed class UpdateBookCommandHandler(IApplicationDbContext db)
     : ICommandHandler<UpdateBookCommand>
 {
     public async Task<Result> Handle(UpdateBookCommand command, CancellationToken cancellationToken)
     {
-        var book = await unitOfWork.BookRepository.GetByIdAsync(command.Id, cancellationToken);
+        var book = await db.Books.FirstOrDefaultAsync(b => b.Id == command.Id, cancellationToken);
 
         if (book is null)
         {
-            return Result.Fail("Kitap bulunamadı");
+            return Result.Fail("Book not found.");
         }
 
         command.Adapt(book);
-        unitOfWork.BookRepository.Update(book);
-        await unitOfWork.SaveChangesAsync(cancellationToken);
+        await db.SaveChangesAsync(cancellationToken);
 
         return Result.Ok();
     }
