@@ -2,6 +2,7 @@ using BookManager.Application.Interfaces;
 using BookManager.Application.Interfaces.Messaging;
 using FluentResults;
 using FluentValidation;
+using Microsoft.EntityFrameworkCore;
 
 namespace BookManager.Application.Features.Books.Commands;
 
@@ -14,23 +15,23 @@ public sealed class DeleteBookCommandValidator : AbstractValidator<DeleteBookCom
              .NotEmpty()
              .Must(id => Guid.TryParse(id.ToString(), out _))
              .NotEqual(Guid.Empty)
-             .WithMessage("Geçerli bir kitap kimliği belirtilmelidir.");
+             .WithMessage("A valid book ID must be specified.");
     }
 }
-internal sealed class DeleteBookCommandHandler(IUnitOfWork unitOfWork)
+internal sealed class DeleteBookCommandHandler(IApplicationDbContext db)
     : ICommandHandler<DeleteBookCommand>
 {
     public async Task<Result> Handle(DeleteBookCommand command, CancellationToken cancellationToken)
     {
-        var book = await unitOfWork.BookRepository.GetByIdAsync(command.Id, cancellationToken);
+        var book = await db.Books.FirstOrDefaultAsync(b => b.Id == command.Id, cancellationToken);
 
         if (book is null)
         {
-            return Result.Fail("Kitap bulunamadı");
+            return Result.Fail("Book not found.");
         }
 
-        unitOfWork.BookRepository.Remove(book);
-        await unitOfWork.SaveChangesAsync(cancellationToken);
+        db.Books.Remove(book);
+        await db.SaveChangesAsync(cancellationToken);
 
         return Result.Ok();
     }
