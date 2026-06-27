@@ -4,10 +4,12 @@ using FastEndpoints;
 using FluentResults;
 using FluentValidation;
 using Mapster;
+using Microsoft.EntityFrameworkCore;
 
 namespace BookManager.Application.Features.Books.Queries;
 
 public sealed record GetBookByIdQuery(Guid Id) : IQuery<GetBookByIdQueryResponse>;
+
 public sealed class GetBookByIdQueryValidator : Validator<GetBookByIdQuery>
 {
     public GetBookByIdQueryValidator()
@@ -16,24 +18,30 @@ public sealed class GetBookByIdQueryValidator : Validator<GetBookByIdQuery>
             .NotEmpty()
             .Must(id => Guid.TryParse(id.ToString(), out _))
             .NotEqual(Guid.Empty)
-            .WithMessage("Geçerli bir kitap kimliği belirtilmelidir.");
+            .WithMessage("A valid book ID must be specified.");
     }
 }
-internal sealed class GetBookByIdQueryHandler(IUnitOfWork unitOfWork)
+
+internal sealed class GetBookByIdQueryHandler(IApplicationDbContext db)
     : IQueryHandler<GetBookByIdQuery, GetBookByIdQueryResponse>
 {
-    public async Task<Result<GetBookByIdQueryResponse>> Handle(GetBookByIdQuery query, CancellationToken cancellationToken)
+    public async Task<Result<GetBookByIdQueryResponse>> Handle(GetBookByIdQuery query,
+        CancellationToken cancellationToken)
     {
-        var book = await unitOfWork.BookRepository.GetByIdAsync(query.Id, cancellationToken);
+        var book = await db.Books
+            .AsNoTracking()
+            .Include(b => b.Category)
+            .FirstOrDefaultAsync(b => b.Id == query.Id, cancellationToken);
 
         if (book is null)
         {
-            return Result.Fail("Kitap bulunamadı");
+            return Result.Fail("Book not found.");
         }
 
         return book.Adapt<GetBookByIdQueryResponse>();
     }
 }
+
 public sealed class GetBookByIdQueryResponse
 {
     public Guid Id { get; set; }
