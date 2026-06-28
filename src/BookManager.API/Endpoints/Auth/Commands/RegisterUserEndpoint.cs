@@ -1,27 +1,27 @@
 using BookManager.Application.Features.Auth.Commands;
-using Messaging = BookManager.Application.Interfaces.Messaging;
-using FastEndpoints;
+using BookManager.Application.Interfaces.Messaging;
+using Microsoft.AspNetCore.Mvc;
 
 namespace BookManager.API.Endpoints.Auth.Commands;
 
-public class RegisterUserEndpoint(Messaging.ICommandHandler<RegisterUserCommand> handler)
-    : Endpoint<RegisterUserCommand>
+public static class RegisterUserEndpoint
 {
-    public override void Configure()
+    public static void MapRegisterUser(this IEndpointRouteBuilder app)
     {
-        Post("/auth/register");
-        AllowAnonymous();
-    }
-    public override async Task HandleAsync(RegisterUserCommand req, CancellationToken ct)
-    {
-        var result = await handler.Handle(req, ct);
-
-        if (result.IsFailed)
+        app.MapPost("/auth/register", async (
+            [FromBody] RegisterUserCommand command,
+            ICommandHandler<RegisterUserCommand> handler,
+            CancellationToken ct) =>
         {
-            foreach (var error in result.Errors) AddError(error.Message);
-            ThrowIfAnyErrors(400);
-        }
+            var result = await handler.Handle(command, ct);
 
-        await SendAsync(true, 201, ct);
+            if (result.IsFailed)
+            {
+                return Results.BadRequest(result.Errors.Select(e => e.Message));
+            }
+
+            return Results.Created();
+        })
+        .AllowAnonymous();
     }
 }

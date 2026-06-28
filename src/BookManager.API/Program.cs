@@ -41,7 +41,6 @@ app.UseAuthorization();
 
 app.MapAuthEndpoints();
 app.MapBookEndpoints();
-app.UseFastEndpoints();
 
 
 await SeedData.SeedAsync(app.Services);

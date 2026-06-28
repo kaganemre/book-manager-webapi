@@ -38,8 +38,6 @@ public static class ApplicationServiceRegistration
 
         services.Decorate(typeof(IQueryHandler<,>), typeof(LoggingQueryHandler<,>));
 
-        services.AddFastEndpoints();
-
         return services;
     }
 }
