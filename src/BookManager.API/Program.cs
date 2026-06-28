@@ -39,6 +39,7 @@ app.UseStatusCodePages();
 app.UseAuthentication();
 app.UseAuthorization();
 
+app.MapBookEndpoints();
 app.UseFastEndpoints();
 
 

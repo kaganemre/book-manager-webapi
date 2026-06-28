@@ -4,24 +4,27 @@ using FastEndpoints;
 
 namespace BookManager.API.Endpoints.Books.Queries;
 
-public class GetBookByIdEndpoint(IQueryHandler<GetBookByIdQuery, GetBookByIdQueryResponse> handler)
-    : Endpoint<GetBookByIdQuery, GetBookByIdQueryResponse>
+public static class GetBookByIdEndpoint
 {
-    public override void Configure()
-    {
-        Get("/book/{id}");
-        Roles("Admin", "User");
-    }
-    public override async Task HandleAsync(GetBookByIdQuery req, CancellationToken ct)
-    {
-        var result = await handler.Handle(req, ct);
+    public const string Name = "GetBookById";
 
-        if (result.IsFailed)
-        {
-            await SendNotFoundAsync(ct);
-            return;
-        }
+    public static void MapGetBookById(this IEndpointRouteBuilder app)
+    {
+        app.MapGet("/books/{id:guid}", async (
+                Guid id,
+                IQueryHandler<GetBookByIdQuery, GetBookByIdQueryResponse> handler,
+                CancellationToken ct) =>
+            {
+                var result = await handler.Handle(new GetBookByIdQuery(id), ct);
 
-        await SendOkAsync(result.Value, ct);
+                if (result.IsFailed)
+                {
+                    return Results.NotFound(result.Errors.Select(e => e.Message));
+                }
+
+                return Results.Ok(result.Value);
+            })
+            .WithName(Name)
+            .RequireAuthorization(policy => policy.RequireRole("Admin", "User"));
     }
 }

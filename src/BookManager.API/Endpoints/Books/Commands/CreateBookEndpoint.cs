@@ -1,32 +1,31 @@
 using BookManager.API.Endpoints.Books.Queries;
 using BookManager.Application.Features.Books.Commands;
-using Messaging = BookManager.Application.Interfaces.Messaging;
-using FastEndpoints;
+using BookManager.Application.Interfaces.Messaging;
+using Microsoft.AspNetCore.Mvc;
 
 namespace BookManager.API.Endpoints.Books.Commands;
 
-public class CreateBookEndpoint(Messaging.ICommandHandler<CreateBookCommand, CreateBookCommandResponse> handler)
-    : Endpoint<CreateBookCommand, CreateBookCommandResponse>
+public static class CreateBookEndpoint
 {
-    public override void Configure()
+    public static void MapCreateBook(this IEndpointRouteBuilder app)
     {
-        Post("/books");
-        Roles("Admin");
-    }
-    public override async Task HandleAsync(CreateBookCommand req, CancellationToken ct)
-    {
-        var result = await handler.Handle(req, ct);
+        app.MapPost("/books", async (
+                [FromBody] CreateBookCommand command,
+                ICommandHandler<CreateBookCommand, CreateBookCommandResponse> handler,
+                CancellationToken ct) =>
+            {
+                var result = await handler.Handle(command, ct);
 
-        if (result.IsFailed)
-        {
-            foreach (var error in result.Errors) AddError(error.Message);
-            ThrowIfAnyErrors(409);
-        }
+                if (result.IsFailed)
+                {
+                    return Results.Conflict(result.Errors.Select(e => e.Message));
+                }
 
-        await SendCreatedAtAsync<GetBookByIdEndpoint>(
-                new { id = result.Value.Id },
-                result.Value,
-                cancellation: ct
-            );
+                return Results.CreatedAtRoute(
+                    GetBookByIdEndpoint.Name,
+                    new { id = result.Value.Id },
+                    result.Value);
+            })
+            .RequireAuthorization(policy => policy.RequireRole("Admin"));
     }
 }
