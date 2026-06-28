@@ -4,17 +4,17 @@ using FastEndpoints;
 
 namespace BookManager.API.Endpoints.Books.Queries;
 
-public class GetAllBooksEndpoint(IQueryHandler<GetAllBooksQuery, IReadOnlyList<GetAllBooksQueryResponse>> handler)
-    : EndpointWithoutRequest<IReadOnlyList<GetAllBooksQueryResponse>>
+public static class GetAllBooksEndpoint
 {
-    public override void Configure()
+    public static void MapGetAllBooks(this IEndpointRouteBuilder app)
     {
-        Get("/books");
-        Roles("Admin", "User");
-    }
-    public override async Task HandleAsync(CancellationToken ct)
-    {
-        var result = await handler.Handle(new GetAllBooksQuery(), ct);
-        await SendOkAsync(result.Value, ct);
+        app.MapGet("/books", async (
+                IQueryHandler<GetAllBooksQuery, IReadOnlyList<GetAllBooksQueryResponse>> handler,
+                CancellationToken ct) =>
+            {
+                var result = await handler.Handle(new GetAllBooksQuery(), ct);
+                return Results.Ok(result.Value);
+            })
+            .RequireAuthorization(policy => policy.RequireRole("Admin", "User"));
     }
 }
