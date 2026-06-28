@@ -1,9 +1,7 @@
 using BookManager.Application.Common.Services;
 using BookManager.Application.Interfaces;
 using BookManager.Infrastructure.Context;
-using BookManager.Infrastructure.Repositories;
 using BookManager.Infrastructure.Security;
-using BookManager.Infrastructure.UoW;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -19,9 +17,6 @@ public static class DependencyInjection
             options.UseSqlServer(configuration.GetConnectionString("DefaultConnection")));
 
         services.AddScoped<IApplicationDbContext>(provider => provider.GetRequiredService<ApplicationDbContext>());
-        services.AddScoped<IBookRepository, BookRepository>();
-        services.AddScoped<ICategoryRepository, CategoryRepository>();
-        services.AddScoped<IUnitOfWork, UnitOfWork>();
         services.AddScoped<IJwtTokenService, JwtTokenService>();
 
         services.AddIdentity<IdentityUser, IdentityRole>()
