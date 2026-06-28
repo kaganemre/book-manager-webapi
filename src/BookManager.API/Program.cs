@@ -1,9 +1,11 @@
 using BookManager.API.Extensions;
 using BookManager.API.Middleware;
 using BookManager.Application;
+using BookManager.Application.Features.Books.Commands;
 using BookManager.Infrastructure;
 using BookManager.Infrastructure.Data;
 using FastEndpoints;
+using FluentValidation;
 using Scalar.AspNetCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -14,6 +16,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddOpenApi();
 
 builder.Services.AddApplication();
+builder.Services.AddValidatorsFromAssemblyContaining<CreateBookCommandValidator>();
 builder.Services.AddInfrastructure(builder.Configuration);
 
 builder.Services.AddJwtAuthentication(builder.Configuration);
@@ -41,6 +44,7 @@ app.UseAuthorization();
 
 app.MapAuthEndpoints();
 app.MapBookEndpoints();
+app.UseFastEndpoints();
 
 
 await SeedData.SeedAsync(app.Services);
