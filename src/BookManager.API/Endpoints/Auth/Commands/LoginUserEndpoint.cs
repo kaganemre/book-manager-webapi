@@ -1,29 +1,27 @@
 using BookManager.Application.Features.Auth.Commands;
-using Messaging = BookManager.Application.Interfaces.Messaging;
-using FastEndpoints;
+using BookManager.Application.Interfaces.Messaging;
+using Microsoft.AspNetCore.Mvc;
 
 namespace BookManager.API.Endpoints.Auth.Commands;
 
-public class LoginUserEndpoint(Messaging.ICommandHandler<LoginUserCommand, LoginUserCommandResponse> handler)
-    : Endpoint<LoginUserCommand, LoginUserCommandResponse>
+public static class LoginUserEndpoint
 {
-    public override void Configure()
+    public static void MapLoginUser(this IEndpointRouteBuilder app)
     {
-        Post("/auth/login");
-        AllowAnonymous();
-    }
-    public override async Task HandleAsync(LoginUserCommand req, CancellationToken ct)
-    {
-        var result = await handler.Handle(req, ct);
-
-        if (result.IsFailed)
+        app.MapPost("/auth/login", async (
+            [FromBody] LoginUserCommand command,
+            ICommandHandler<LoginUserCommand, LoginUserCommandResponse> handler,
+            CancellationToken ct) =>
         {
-            foreach (var error in result.Errors) AddError(error.Message);
+            var result = await handler.Handle(command, ct);
 
-            ThrowIfAnyErrors(401);
-        }
+            if (result.IsFailed)
+            {
+                return Results.Unauthorized();
+            }
 
-        await SendOkAsync(result.Value, ct);
+            return Results.Ok(result.Value);
+        })
+        .AllowAnonymous();
     }
-
 }
