@@ -1,6 +1,5 @@
 using BookManager.Application.Features.Books.Queries;
 using BookManager.Application.Interfaces.Messaging;
-using FastEndpoints;
 
 namespace BookManager.API.Endpoints.Books.Queries;
 

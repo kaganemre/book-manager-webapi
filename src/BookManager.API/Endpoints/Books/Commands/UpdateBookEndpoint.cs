@@ -1,27 +1,28 @@
 using BookManager.Application.Features.Books.Commands;
-using Messaging = BookManager.Application.Interfaces.Messaging;
-using FastEndpoints;
+using BookManager.Application.Interfaces.Messaging;
+using Microsoft.AspNetCore.Mvc;
 
 namespace BookManager.API.Endpoints.Books.Commands;
 
-public class UpdateBookEndpoint(Messaging.ICommandHandler<UpdateBookCommand> handler)
-    : Endpoint<UpdateBookCommand>
+public static class UpdateBookEndpoint
 {
-    public override void Configure()
+    public static void MapUpdateBook(this IEndpointRouteBuilder app)
     {
-        Put("/books/{id}");
-        Roles("Admin");
-    }
-    public override async Task HandleAsync(UpdateBookCommand req, CancellationToken ct)
-    {
-        var result = await handler.Handle(req, ct);
+        app.MapPut("/books/{id:guid}", async (
+                Guid id,
+                [FromBody] UpdateBookCommand command,
+                ICommandHandler<UpdateBookCommand> handler,
+                CancellationToken ct) =>
+            {
+                var result = await handler.Handle(command with { Id = id }, ct);
 
-        if (result.IsFailed)
-        {
-            foreach (var error in result.Errors) AddError("Id", error.Message);
-            ThrowIfAnyErrors(404);
-        }
+                if (result.IsFailed)
+                {
+                    return Results.NotFound(result.Errors.Select(e => e.Message));
+                }
 
-        await SendNoContentAsync(ct);
+                return Results.NoContent();
+            })
+            .RequireAuthorization(policy => policy.RequireRole("Admin"));
     }
 }

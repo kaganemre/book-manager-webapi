@@ -8,6 +8,7 @@ public static class BookEndpoints
     public static void MapBookEndpoints(this IEndpointRouteBuilder app)
     {
         app.MapCreateBook();
+        app.MapUpdateBook();
         app.MapGetAllBooks();
         app.MapGetBookById();
     }
