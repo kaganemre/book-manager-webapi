@@ -1,26 +1,27 @@
 using BookManager.Application.Features.Books.Commands;
-using Messaging = BookManager.Application.Interfaces.Messaging;
-using FastEndpoints;
+using BookManager.Application.Interfaces.Messaging;
+
 
 namespace BookManager.API.Endpoints.Books.Commands;
 
-public class DeleteBookEndpoint(Messaging.ICommandHandler<DeleteBookCommand> handler) : Endpoint<DeleteBookCommand>
+public static class DeleteBookEndpoint
 {
-    public override void Configure()
+    public static void MapDeleteBook(this IEndpointRouteBuilder app)
     {
-        Delete("/books/{id}");
-        Roles("Admin");
-    }
-    public override async Task HandleAsync(DeleteBookCommand req, CancellationToken ct)
-    {
-        var result = await handler.Handle(req, ct);
-
-        if (result.IsFailed)
+        app.MapDelete("/books/{id:guid}", async (
+            Guid id,
+            ICommandHandler<DeleteBookCommand> handler,
+            CancellationToken ct) =>
         {
-            await SendNotFoundAsync(ct);
-            return;
-        }
+            var result = await handler.Handle(new DeleteBookCommand(id), ct);
 
-        await SendNoContentAsync(ct);
+            if (result.IsFailed)
+            {
+                return Results.NotFound(result.Errors.Select(e => e.Message));
+            }
+
+            return Results.NoContent();
+        })
+        .RequireAuthorization(policy => policy.RequireRole("Admin"));
     }
 }

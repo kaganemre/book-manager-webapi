@@ -9,6 +9,7 @@ public static class BookEndpoints
     {
         app.MapCreateBook();
         app.MapUpdateBook();
+        app.MapDeleteBook();
         app.MapGetAllBooks();
         app.MapGetBookById();
     }
