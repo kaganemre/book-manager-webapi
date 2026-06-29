@@ -23,10 +23,9 @@ public static class DependencyInjection
             .AddEntityFrameworkStores<ApplicationDbContext>()
             .AddDefaultTokenProviders();
 
-        services.AddAuthorization();
-
         return services;
     }
+
     public static void ApplyMigrations(IServiceProvider serviceProvider)
     {
         using var scope = serviceProvider.CreateScope();
@@ -40,5 +39,4 @@ public static class DependencyInjection
             dbContext.Database.Migrate();
         }
     }
-
 }

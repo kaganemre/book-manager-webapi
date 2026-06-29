@@ -2,7 +2,6 @@ using BookManager.Application.Common.Decorators.Logging;
 using BookManager.Application.Common.Decorators.Validation;
 using BookManager.Application.Features.Books.Commands;
 using BookManager.Application.Interfaces.Messaging;
-using FastEndpoints;
 using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
 using Messaging = BookManager.Application.Interfaces.Messaging;
