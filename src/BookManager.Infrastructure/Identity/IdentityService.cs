@@ -1,5 +1,6 @@
 using BookManager.Application.Common.Models;
 using BookManager.Application.Common.Services;
+using FluentResults;
 using Microsoft.AspNetCore.Identity;
 
 namespace BookManager.Infrastructure.Identity;
@@ -27,5 +28,23 @@ public sealed class IdentityService(UserManager<IdentityUser> userManager) : IId
         var roles = await _userManager.GetRolesAsync(user);
 
         return new AuthenticatedUser(user.Id, user.Email!, user.UserName!, roles);
+    }
+
+    public async Task<Result> CreateAsync(CreateUserRequest createUserRequest)
+    {
+        var user = new IdentityUser
+        {
+            UserName = createUserRequest.UserName,
+            Email = createUserRequest.Email
+        };
+            
+        var result = await _userManager.CreateAsync(user, createUserRequest.Password);
+
+        if (!result.Succeeded)
+        {
+            return Result.Fail(result.Errors.Select(e => e.Description));
+        }
+
+        return Result.Ok();
     }
 }

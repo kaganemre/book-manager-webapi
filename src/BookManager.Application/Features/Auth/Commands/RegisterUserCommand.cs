@@ -1,7 +1,8 @@
+using BookManager.Application.Common.Models;
+using BookManager.Application.Common.Services;
 using BookManager.Application.Interfaces.Messaging;
 using FluentResults;
 using FluentValidation;
-using Microsoft.AspNetCore.Identity;
 
 namespace BookManager.Application.Features.Auth.Commands;
 
@@ -24,23 +25,18 @@ public sealed class RegisterUserCommandValidator : AbstractValidator<RegisterUse
             .MinimumLength(6).WithMessage("Şifre en az 6 karakter olmalıdır!");
     }
 }
-internal sealed class RegisterUserCommandHandler(UserManager<IdentityUser> userManager)
+internal sealed class RegisterUserCommandHandler(IIdentityService identityService)
     : ICommandHandler<RegisterUserCommand>
 {
     public async Task<Result> Handle(RegisterUserCommand command, CancellationToken cancellationToken)
     {
-        var user = new IdentityUser
-        {
-            UserName = command.UserName,
-            Email = command.Email
-        };
+        var request = new CreateUserRequest(command.UserName, command.Email, command.Password);
+        
+        var result = await identityService.CreateAsync(request);
 
-        var result = await userManager.CreateAsync(user, command.Password);
-
-        if (!result.Succeeded)
+        if (result.IsFailed)
         {
-            var errors = result.Errors.Select(e => e.Description);
-            return Result.Fail(errors);
+            return result;
         }
 
         return Result.Ok();
