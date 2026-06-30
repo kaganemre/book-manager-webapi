@@ -4,6 +4,5 @@ namespace BookManager.Application.Common.Services;
 
 public interface IIdentityService
 {
-    Task<UserInfo?> FindByEmailAsync(string email);
-    Task<bool> CheckPasswordAsync(UserInfo user, string password);
+    Task<AuthenticatedUser?> ValidateCredentialsAsync(string email, string password);
 }

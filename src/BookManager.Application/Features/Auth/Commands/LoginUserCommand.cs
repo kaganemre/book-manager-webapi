@@ -2,7 +2,6 @@ using BookManager.Application.Common.Services;
 using BookManager.Application.Interfaces.Messaging;
 using FluentResults;
 using FluentValidation;
-using Microsoft.AspNetCore.Identity;
 
 namespace BookManager.Application.Features.Auth.Commands;
 
@@ -22,26 +21,20 @@ public sealed class LoginUserCommandValidator : AbstractValidator<LoginUserComma
     }
 }
 internal sealed class LoginUserCommandHandler(
-    UserManager<IdentityUser> userManager,
+    IIdentityService identityService,
     IJwtTokenService jwtTokenService
 ) : ICommandHandler<LoginUserCommand, LoginUserCommandResponse>
 {
     public async Task<Result<LoginUserCommandResponse>> Handle(LoginUserCommand command, CancellationToken cancellationToken)
     {
-        var user = await userManager.FindByEmailAsync(command.Email);
+        var authenticatedUser = await identityService.ValidateCredentialsAsync(command.Email, command.Password);
 
-        if (user is null)
+        if (authenticatedUser is null)
         {
-            return Result.Fail("Kullanıcı bulunamadı.");
+            return Result.Fail("Email or password is incorrect");
         }
-
-        var isPasswordValid = await userManager.CheckPasswordAsync(user, command.Password);
-        if (!isPasswordValid)
-        {
-            return Result.Fail("Geçersiz kullanıcı adı veya şifre.");
-        }
-
-        var token = await jwtTokenService.GenerateToken(user);
+        
+        var token = await jwtTokenService.GenerateToken(authenticatedUser);
 
         return Result.Ok(new LoginUserCommandResponse { Token = token });
     }

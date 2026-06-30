@@ -1,6 +1,7 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using BookManager.Application.Common.Models;
 using BookManager.Application.Common.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
@@ -8,16 +9,11 @@ using Microsoft.IdentityModel.Tokens;
 
 namespace BookManager.Infrastructure.Security;
 
-public class JwtTokenService : IJwtTokenService
+public class JwtTokenService(UserManager<IdentityUser> userManager, IConfiguration config) : IJwtTokenService
 {
-    private readonly UserManager<IdentityUser> _userManager;
-    private readonly IConfiguration _config;
-    public JwtTokenService(UserManager<IdentityUser> userManager, IConfiguration config)
-    {
-        _userManager = userManager;
-        _config = config;
-    }
-    public async Task<string> GenerateToken(IdentityUser user)
+    private readonly UserManager<IdentityUser> _userManager = userManager;
+    private readonly IConfiguration _config = config;
+    public async Task<string> GenerateToken(AuthenticatedUser user)
     {
         var tokenHandler = new JwtSecurityTokenHandler();
         var key = Encoding.UTF8.GetBytes(_config["JwtSettings:Secret"]!);
@@ -25,12 +21,11 @@ public class JwtTokenService : IJwtTokenService
         var claims = new List<Claim>
         {
             new(ClaimTypes.NameIdentifier, user.Id),
-            new(ClaimTypes.Email, user.Email!),
-            new(ClaimTypes.Name, user.UserName!)
+            new(ClaimTypes.Email, user.Email),
+            new(ClaimTypes.Name, user.UserName)
         };
-
-        var roles = await _userManager.GetRolesAsync(user);
-        claims.AddRange(roles.Select(role => new Claim(ClaimTypes.Role, role)));
+        
+        claims.AddRange(user.Roles.Select(role => new Claim(ClaimTypes.Role, role)));
 
         var tokenDescriptor = new SecurityTokenDescriptor
         {
