@@ -9,47 +9,47 @@ public abstract class BaseBookCommandValidator<T> : AbstractValidator<T>
     {
         RuleFor(x => x.Title)
             .NotEmpty()
-            .WithMessage("Başlık alanı zorunludur.")
+            .WithMessage("Title is required.")
             .MaximumLength(150)
-            .WithMessage("Başlık en fazla 150 karakter olabilir.");
+            .WithMessage("Title must not exceed 150 characters.");
 
         RuleFor(x => x.Author)
             .NotEmpty()
-            .WithMessage("Yazar adı zorunludur.")
+            .WithMessage("Author is required.")
             .MaximumLength(100)
-            .WithMessage("Yazar adı en fazla 100 karakter olabilir.");
+            .WithMessage("Author must not exceed 100 characters.");
 
         RuleFor(x => x.Description)
             .MaximumLength(1000)
-            .WithMessage("Açıklama en fazla 1000 karakter olabilir.");
+            .WithMessage("Description must not exceed 1,000 characters.");
 
         RuleFor(x => x.ISBN)
             .NotEmpty()
-            .WithMessage("ISBN alanı zorunludur.")
+            .WithMessage("ISBN is required.")
             .Matches(@"^\d{10}(\d{3})?$")
-            .WithMessage("ISBN 10 veya 13 haneli olmalıdır.");
+            .WithMessage("ISBN must be either 10 or 13 digits long.");
 
         RuleFor(x => x.PageCount)
             .GreaterThan(0)
             .When(x => x.PageCount.HasValue)
-            .WithMessage("Sayfa sayısı sıfırdan büyük olmalıdır.");
+            .WithMessage("Page count must be greater than zero.");
 
         RuleFor(x => x.PublishedDate)
             .LessThanOrEqualTo(DateOnly.FromDateTime(DateTime.UtcNow))
-            .WithMessage("Yayın tarihi bugünden ileri bir tarih olamaz.");
+            .WithMessage("Published date cannot be in the future.");
 
         RuleFor(x => x.StockQuantity)
             .GreaterThanOrEqualTo(0)
-            .WithMessage("Stok miktarı sıfır veya daha büyük olmalıdır.");
+            .WithMessage("Stock quantity must be zero or greater.");
 
         RuleFor(x => x.Source)
             .NotEmpty()
-            .WithMessage("Kaynak alanı zorunludur.")
+            .WithMessage("Source is required.")
             .MaximumLength(255)
-            .WithMessage("Kaynak en fazla 255 karakter olabilir.");
+            .WithMessage("Source must not exceed 255 characters.");
 
         RuleFor(x => x.CategoryId)
             .GreaterThan(0)
-            .WithMessage("Kategori kimliği pozitif bir değer olmalıdır.");
+            .WithMessage("Category ID must be a positive number.");
     }
 }
