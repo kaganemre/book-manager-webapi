@@ -13,16 +13,16 @@ public sealed class RegisterUserCommandValidator : AbstractValidator<RegisterUse
     public RegisterUserCommandValidator()
     {
         RuleFor(x => x.UserName)
-            .NotEmpty().WithMessage("Kullanıcı adı boş olamaz!")
-            .MinimumLength(3).WithMessage("Kullanıcı adı en az 3 karakter olmalıdır");
+            .NotEmpty().WithMessage("Username cannot be empty!")
+            .MinimumLength(3).WithMessage("Username must be at least 3 characters long.");
 
         RuleFor(x => x.Email)
-           .NotEmpty().WithMessage("E-posta boş olamaz!")
-           .EmailAddress().WithMessage("Geçerli bir e-posta adresi giriniz!");
+            .NotEmpty().WithMessage("Email cannot be empty!")
+            .EmailAddress().WithMessage("Please enter a valid email address!");
 
         RuleFor(x => x.Password)
-            .NotEmpty().WithMessage("Şifre boş olamaz!")
-            .MinimumLength(6).WithMessage("Şifre en az 6 karakter olmalıdır!");
+            .NotEmpty().WithMessage("Password cannot be empty!")
+            .MinimumLength(6).WithMessage("Password must be at least 6 characters long.");
     }
 }
 internal sealed class RegisterUserCommandHandler(IIdentityService identityService)
