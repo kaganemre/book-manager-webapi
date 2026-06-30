@@ -12,12 +12,12 @@ public sealed class LoginUserCommandValidator : AbstractValidator<LoginUserComma
     public LoginUserCommandValidator()
     {
         RuleFor(x => x.Email)
-            .NotEmpty().WithMessage("E-post boş olamaz!")
-            .EmailAddress().WithMessage("Geçerli bir e-posta adresi giriniz!");
+            .NotEmpty().WithMessage("Email cannot be empty!")
+            .EmailAddress().WithMessage("Please enter a valid email address!");
 
         RuleFor(x => x.Password)
-        .NotEmpty().WithMessage("Şifre boş olamaz!")
-        .MinimumLength(6).WithMessage("Şifre en az 6 karakter olmalıdır!");
+            .NotEmpty().WithMessage("Password cannot be empty!")
+            .MinimumLength(6).WithMessage("Password must be at least 6 characters long.");
     }
 }
 internal sealed class LoginUserCommandHandler(
