@@ -10,7 +10,7 @@
 ![Scalar](https://img.shields.io/badge/API%20Docs-Scalar-6C47FF)
 ![License](https://img.shields.io/github/license/kaganemre/book-manager-webapi)
 
-After MediatR — which has almost become synonymous with the CQRS pattern — announced its transition to a commercial licence, the CQRS approach implemented with the Decorator Pattern (popularised by Milan Jovanović) stood out as a compelling free alternative. Its flexible architecture, clear separation of responsibilities, and minimal dependencies particularly caught my attention.
+MediatR, which has almost become synonymous with the CQRS pattern, announced its transition to a commercial licence. After that, the CQRS approach implemented with the Decorator Pattern (popularised by Milan Jovanović) stood out as a compelling free alternative. Its flexible architecture, clear separation of responsibilities, and minimal dependencies particularly caught my attention.
 
 For this reason, in the Book Manager Web API project I developed using Clean Architecture on .NET 9, I implemented Milan Jovanović's CQRS + Decorator Pattern approach alongside ASP.NET Core Minimal API.
 
@@ -28,13 +28,14 @@ The Decorator Pattern provides a more flexible and modular architecture by using
 * ✅ CQRS (Command Query Responsibility Segregation)
 * ✅ Logging and Validation via Decorator Pattern
 * ✅ Dependency Injection and service decoration with Scrutor
-* ✅ No MediatR — direct handler routing without unnecessary abstractions
+* ✅ No MediatR. Direct handler routing without unnecessary abstractions
 * ✅ ASP.NET Core Minimal API with static extension class endpoints
-* ✅ Direct EF Core data access via `IApplicationDbContext` — no Repository or Unit of Work overhead
+* ✅ Direct EF Core data access via `IApplicationDbContext`. No Repository or Unit of Work overhead
+* ✅ Application layer fully decoupled from ASP.NET Core Identity via `IIdentityService`
 * ✅ Command/query validation with FluentValidation
 * ✅ Success and failure handling with FluentResults
 * ✅ Centralised error handling with Global Exception Handler and consistent HTTP responses
-* ✅ JWT-based Authentication and Authorisation with ASP.NET Core Identity
+* ✅ JWT-based Authentication and Authorization with ASP.NET Core Identity
 * ✅ SQL Server integration with Entity Framework Core
 * ✅ Object mapping with Mapster
 * ✅ Interactive API documentation with Scalar
@@ -231,7 +232,44 @@ app.MapBookEndpoints();
 
 ## 🛡 Authentication & Authorization
 
-JWT tokens are generated via `IJwtTokenService` and validated using JWT Bearer Authentication. Role-based authorization is applied directly on each endpoint:
+The Application layer is fully decoupled from ASP.NET Core Identity. Instead of depending on `UserManager<IdentityUser>` directly, command handlers depend only on `IIdentityService` and `IJwtTokenService`, both defined in the Application layer as plain abstractions.
+
+```csharp
+public interface IIdentityService
+{
+    Task<AuthenticatedUser?> ValidateCredentialsAsync(string email, string password);
+    Task<Result> CreateAsync(CreateUserRequest createUserRequest);
+}
+
+public interface IJwtTokenService
+{
+    Task<string> GenerateToken(AuthenticatedUser user);
+}
+```
+
+`AuthenticatedUser` and `CreateUserRequest` are simple records owned by the Application layer, so handlers never reference `IdentityUser` at all:
+
+```csharp
+internal sealed class LoginUserCommandHandler(
+    IIdentityService identityService,
+    IJwtTokenService jwtTokenService
+) : ICommandHandler<LoginUserCommand, LoginUserCommandResponse>
+{
+    public async Task<Result<LoginUserCommandResponse>> Handle(LoginUserCommand command, CancellationToken cancellationToken)
+    {
+        var authenticatedUser = await identityService.ValidateCredentialsAsync(command.Email, command.Password);
+
+        if (authenticatedUser is null)
+            return Result.Fail("Email or password is incorrect");
+
+        var token = await jwtTokenService.GenerateToken(authenticatedUser);
+
+        return Result.Ok(new LoginUserCommandResponse { Token = token });
+    }
+}
+```
+
+`IIdentityService` and `IJwtTokenService` are implemented in the Infrastructure layer, where `UserManager<IdentityUser>` and ASP.NET Core Identity actually live. Role-based authorization is applied directly on each endpoint:
 
 ```csharp
 .RequireAuthorization(policy => policy.RequireRole("Admin"))
@@ -245,6 +283,7 @@ ASP.NET Core Identity manages user registration, password hashing, and role assi
 ## 🧪 Testing
 
 * `IApplicationDbContext` can be easily mocked for unit testing handlers
+* `IIdentityService` and `IJwtTokenService` abstractions allow Auth handlers to be tested without any dependency on ASP.NET Core Identity
 * Handler classes are small and contain only their own business logic
 * The Decorator Pattern separates cross-cutting concerns, keeping handlers focused and testable
 
