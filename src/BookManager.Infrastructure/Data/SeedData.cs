@@ -1,18 +1,20 @@
+using BookManager.Application.Interfaces;
 using BookManager.Domain.Entities;
-using BookManager.Infrastructure.Context;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace BookManager.Infrastructure.Data;
 
 public static class SeedData
 {
-    public static async Task SeedAsync(IServiceProvider serviceProvider)
+    public static async Task SeedBooksAsync(this IServiceProvider serviceProvider)
     {
-        var context = serviceProvider.CreateScope()
-                       .ServiceProvider.GetRequiredService<ApplicationDbContext>();
+        using var scope = serviceProvider.CreateScope();
+        var context = scope.ServiceProvider.GetRequiredService<IApplicationDbContext>();
 
         if (context.Books.Any()) return;
+
         var categories = new List<Category>
         {
             new() { Name = "Yazılım Geliştirme" },
@@ -111,38 +113,39 @@ public static class SeedData
             }
         };
 
-
         context.Books.AddRange(books);
         await context.SaveChangesAsync();
+    }
 
-        if (!context.Users.Any())
+    public static async Task SeedIdentityAsync(this IServiceProvider serviceProvider)
+    {
+        using var scope = serviceProvider.CreateScope();
+        var userManager = scope.ServiceProvider.GetRequiredService<UserManager<IdentityUser>>();
+        var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
+
+        if (await userManager.Users.AnyAsync()) return;
+
+        await roleManager.CreateAsync(new IdentityRole { Name = "Admin" });
+        await roleManager.CreateAsync(new IdentityRole { Name = "User" });
+
+        var adminUser = new IdentityUser
         {
+            UserName = "admin",
+            Email = "admin@info.com",
+            EmailConfirmed = true
+        };
 
-            var userManager = serviceProvider.CreateScope().ServiceProvider.GetRequiredService<UserManager<IdentityUser>>();
-            var roleManager = serviceProvider.CreateScope().ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
+        var normalUser = new IdentityUser
+        {
+            UserName = "user",
+            Email = "user@info.com",
+            EmailConfirmed = true
+        };
 
-            await roleManager.CreateAsync(new IdentityRole { Name = "Admin" });
-            await roleManager.CreateAsync(new IdentityRole { Name = "User" });
+        await userManager.CreateAsync(adminUser, "Admin123!");
+        await userManager.CreateAsync(normalUser, "User123!");
 
-            var adminUser = new IdentityUser
-            {
-                UserName = "admin",
-                Email = "admin@info.com",
-                EmailConfirmed = true
-            };
-
-            var normalUser = new IdentityUser
-            {
-                UserName = "user",
-                Email = "user@info.com",
-                EmailConfirmed = true
-            };
-
-            await userManager.CreateAsync(adminUser, "Admin123!");
-            await userManager.CreateAsync(normalUser, "User123!");
-
-            await userManager.AddToRoleAsync(adminUser, "Admin");
-            await userManager.AddToRoleAsync(normalUser, "User");
-        }
+        await userManager.AddToRoleAsync(adminUser, "Admin");
+        await userManager.AddToRoleAsync(normalUser, "User");
     }
 }

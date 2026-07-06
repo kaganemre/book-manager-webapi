@@ -26,7 +26,9 @@ builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 
 var app = builder.Build();
 
-DependencyInjection.ApplyMigrations(app.Services);
+app.Services.ApplyMigrations();
+await app.Services.SeedBooksAsync();
+await app.Services.SeedIdentityAsync();
 
 app.MapScalarApiReference();
 
@@ -45,8 +47,4 @@ app.UseAuthorization();
 app.MapAuthEndpoints();
 app.MapBookEndpoints();
 
-
-await SeedData.SeedAsync(app.Services);
-
 app.Run();
-

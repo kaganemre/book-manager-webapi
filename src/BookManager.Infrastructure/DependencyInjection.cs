@@ -28,7 +28,7 @@ public static class DependencyInjection
         return services;
     }
 
-    public static void ApplyMigrations(IServiceProvider serviceProvider)
+    public static void ApplyMigrations(this IServiceProvider serviceProvider)
     {
         using var scope = serviceProvider.CreateScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
