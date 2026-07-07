@@ -4,7 +4,6 @@ using BookManager.Application.Features.Books.Commands;
 using BookManager.Application.Interfaces.Messaging;
 using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
-using Messaging = BookManager.Application.Interfaces.Messaging;
 
 namespace BookManager.Application;
 
@@ -13,13 +12,13 @@ public static class ApplicationServiceRegistration
     public static IServiceCollection AddApplication(this IServiceCollection services)
     {
         services.Scan(scan => scan.FromAssemblyOf<CreateBookCommandHandler>()
-            .AddClasses(classes => classes.AssignableTo(typeof(Messaging.ICommandHandler<,>)), publicOnly: false)
+            .AddClasses(classes => classes.AssignableTo(typeof(ICommandHandler<,>)), publicOnly: false)
                 .AsImplementedInterfaces()
                 .WithScopedLifetime()
-            .AddClasses(classes => classes.AssignableTo(typeof(Messaging.ICommandHandler<>)), publicOnly: false)
+            .AddClasses(classes => classes.AssignableTo(typeof(ICommandHandler<>)), publicOnly: false)
                 .AsImplementedInterfaces()
                 .WithScopedLifetime()
-            .AddClasses(classes => classes.AssignableTo(typeof(Messaging.IQueryHandler<,>)), publicOnly: false)
+            .AddClasses(classes => classes.AssignableTo(typeof(IQueryHandler<,>)), publicOnly: false)
                 .AsImplementedInterfaces()
                 .WithScopedLifetime()
         );
@@ -30,10 +29,10 @@ public static class ApplicationServiceRegistration
                 .WithScopedLifetime()
         );
 
-        services.Decorate(typeof(Messaging.ICommandHandler<,>), typeof(LoggingCommandHandler<,>));
-        services.Decorate(typeof(Messaging.ICommandHandler<>), typeof(LoggingCommandBaseHandler<>));
-        services.Decorate(typeof(Messaging.ICommandHandler<,>), typeof(ValidationCommandHandler<,>));
-        services.Decorate(typeof(Messaging.ICommandHandler<>), typeof(ValidationCommandBaseHandler<>));
+        services.Decorate(typeof(ICommandHandler<,>), typeof(LoggingCommandHandler<,>));
+        services.Decorate(typeof(ICommandHandler<>), typeof(LoggingCommandBaseHandler<>));
+        services.Decorate(typeof(ICommandHandler<,>), typeof(ValidationCommandHandler<,>));
+        services.Decorate(typeof(ICommandHandler<>), typeof(ValidationCommandBaseHandler<>));
 
         services.Decorate(typeof(IQueryHandler<,>), typeof(LoggingQueryHandler<,>));
 

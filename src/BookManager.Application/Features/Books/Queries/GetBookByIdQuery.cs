@@ -1,25 +1,12 @@
 using BookManager.Application.Interfaces;
 using BookManager.Application.Interfaces.Messaging;
 using FluentResults;
-using FluentValidation;
 using Mapster;
 using Microsoft.EntityFrameworkCore;
 
 namespace BookManager.Application.Features.Books.Queries;
 
 public sealed record GetBookByIdQuery(Guid Id) : IQuery<GetBookByIdQueryResponse>;
-
-public sealed class GetBookByIdQueryValidator : AbstractValidator<GetBookByIdQuery>
-{
-    public GetBookByIdQueryValidator()
-    {
-        RuleFor(x => x.Id)
-            .NotEmpty()
-            .Must(id => Guid.TryParse(id.ToString(), out _))
-            .NotEqual(Guid.Empty)
-            .WithMessage("A valid book ID must be specified.");
-    }
-}
 
 internal sealed class GetBookByIdQueryHandler(IApplicationDbContext db)
     : IQueryHandler<GetBookByIdQuery, GetBookByIdQueryResponse>
