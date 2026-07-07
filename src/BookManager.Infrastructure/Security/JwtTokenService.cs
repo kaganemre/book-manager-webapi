@@ -3,15 +3,13 @@ using System.Security.Claims;
 using System.Text;
 using BookManager.Application.Common.Models;
 using BookManager.Application.Common.Services;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 
 namespace BookManager.Infrastructure.Security;
 
-public class JwtTokenService(UserManager<IdentityUser> userManager, IConfiguration config) : IJwtTokenService
+public class JwtTokenService(IConfiguration config) : IJwtTokenService
 {
-    private readonly UserManager<IdentityUser> _userManager = userManager;
     private readonly IConfiguration _config = config;
     public async Task<string> GenerateToken(AuthenticatedUser user)
     {
