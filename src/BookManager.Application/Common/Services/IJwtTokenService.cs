@@ -4,5 +4,5 @@ namespace BookManager.Application.Common.Services;
 
 public interface IJwtTokenService
 {
-    Task<string> GenerateToken(AuthenticatedUser user);
+    string GenerateToken(AuthenticatedUser user);
 }

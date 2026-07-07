@@ -34,7 +34,7 @@ internal sealed class LoginUserCommandHandler(
             return Result.Fail("Email or password is incorrect");
         }
         
-        var token = await jwtTokenService.GenerateToken(authenticatedUser);
+        var token = jwtTokenService.GenerateToken(authenticatedUser);
 
         return Result.Ok(new LoginUserCommandResponse { Token = token });
     }

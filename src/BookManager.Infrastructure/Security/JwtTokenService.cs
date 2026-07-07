@@ -11,7 +11,7 @@ namespace BookManager.Infrastructure.Security;
 public class JwtTokenService(IConfiguration config) : IJwtTokenService
 {
     private readonly IConfiguration _config = config;
-    public async Task<string> GenerateToken(AuthenticatedUser user)
+    public string GenerateToken(AuthenticatedUser user)
     {
         var tokenHandler = new JwtSecurityTokenHandler();
         var key = Encoding.UTF8.GetBytes(_config["JwtSettings:Secret"]!);
