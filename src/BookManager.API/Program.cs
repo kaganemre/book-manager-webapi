@@ -15,7 +15,6 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddOpenApi();
 
 builder.Services.AddApplication();
-builder.Services.AddValidatorsFromAssemblyContaining<CreateBookCommandValidator>();
 builder.Services.AddInfrastructure(builder.Configuration);
 builder.Services.AddAuthorization();
 
