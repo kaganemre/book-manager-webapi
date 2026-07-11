@@ -1,8 +1,10 @@
 using BookManager.Application.Common.Services;
 using BookManager.Application.Interfaces;
 using BookManager.Infrastructure.Context;
+using BookManager.Infrastructure.Data;
 using BookManager.Infrastructure.Identity;
 using BookManager.Infrastructure.Security;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -28,7 +30,14 @@ public static class DependencyInjection
         return services;
     }
 
-    public static void ApplyMigrations(this IServiceProvider serviceProvider)
+    public static async Task UseInfrastructureAsync(this IApplicationBuilder app)
+    {
+        app.ApplicationServices.ApplyMigrations();
+        await app.ApplicationServices.SeedBooksAsync();
+        await app.ApplicationServices.SeedIdentityAsync();
+    }
+
+    private static void ApplyMigrations(this IServiceProvider serviceProvider)
     {
         using var scope = serviceProvider.CreateScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();

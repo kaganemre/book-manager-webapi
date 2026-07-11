@@ -1,17 +1,11 @@
 using BookManager.API.Extensions;
 using BookManager.API.Middleware;
 using BookManager.Application;
-using BookManager.Application.Features.Books.Commands;
 using BookManager.Infrastructure;
-using BookManager.Infrastructure.Data;
-using FluentValidation;
 using Scalar.AspNetCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
-
-// Add services to the container.
-// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
 
 builder.Services.AddApplication();
@@ -25,13 +19,10 @@ builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 
 var app = builder.Build();
 
-app.Services.ApplyMigrations();
-await app.Services.SeedBooksAsync();
-await app.Services.SeedIdentityAsync();
+await app.UseInfrastructureAsync();
 
 app.MapScalarApiReference();
 
-// Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
