@@ -8,7 +8,7 @@ using Microsoft.IdentityModel.Tokens;
 
 namespace BookManager.Infrastructure.Security;
 
-public class JwtTokenService(IConfiguration config) : IJwtTokenService
+public sealed class JwtTokenService(IConfiguration config) : IJwtTokenService
 {
     private readonly IConfiguration _config = config;
     public string GenerateToken(AuthenticatedUser user)
